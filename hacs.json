@@ -1,6 +1,5 @@
 {
   "name": "Canvas Ribbons Background",
-  "type": "plugin",
   "render_readme": true,
   "filename": "ha-canvas-ribbons.js",
   "content_in_root": false,
