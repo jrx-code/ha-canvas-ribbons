@@ -2,7 +2,7 @@
 // https://gitlab.iwanus.eu/jiwanus/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 
 (function () {
   "use strict";
@@ -10,6 +10,101 @@ const VERSION = "1.2.0";
   const STORAGE_KEY = "ha-canvas-ribbons-config";
   const PANELS_KEY = "ha-canvas-ribbons-panels";
   const TAU = 2 * Math.PI;
+
+  // --- i18n ---
+  var TRANSLATIONS = {
+    en: {
+      title: "Canvas Ribbons",
+      enablePanel: "Enabled on this panel",
+      refreshHint: "Refresh page (F5) to apply",
+      reset: "Reset",
+      waves: "Waves",
+      trailWidth: "Trail width",
+      rotation: "Rotation",
+      amplitude: "Amplitude",
+      speedMin: "Speed min",
+      speedMax: "Speed max",
+      hueMin: "Hue min",
+      hueMax: "Hue max",
+      cardAlpha: "Card alpha",
+      headerAlpha: "Header alpha",
+      sidebarAlpha: "Sidebar alpha",
+    },
+    pl: {
+      title: "Canvas Ribbons",
+      enablePanel: "Włączone na tym panelu",
+      refreshHint: "Odśwież stronę (F5) aby zastosować",
+      reset: "Reset",
+      waves: "Wstęgi",
+      trailWidth: "Dług. śladu",
+      rotation: "Rotacja",
+      amplitude: "Amplituda",
+      speedMin: "Prędk. min",
+      speedMax: "Prędk. max",
+      hueMin: "Barwa min",
+      hueMax: "Barwa max",
+      cardAlpha: "Karty alfa",
+      headerAlpha: "Header alfa",
+      sidebarAlpha: "Sidebar alfa",
+    },
+    de: {
+      title: "Canvas Ribbons",
+      enablePanel: "Auf diesem Panel aktiviert",
+      refreshHint: "Seite neu laden (F5) zum Anwenden",
+      reset: "Zurücksetzen",
+      waves: "Wellen",
+      trailWidth: "Spurlänge",
+      rotation: "Drehung",
+      amplitude: "Amplitude",
+      speedMin: "Geschw. min",
+      speedMax: "Geschw. max",
+      hueMin: "Farbton min",
+      hueMax: "Farbton max",
+      cardAlpha: "Karten-Alpha",
+      headerAlpha: "Header-Alpha",
+      sidebarAlpha: "Sidebar-Alpha",
+    },
+    es: {
+      title: "Canvas Ribbons",
+      enablePanel: "Activado en este panel",
+      refreshHint: "Actualizar página (F5) para aplicar",
+      reset: "Restablecer",
+      waves: "Ondas",
+      trailWidth: "Longitud estela",
+      rotation: "Rotación",
+      amplitude: "Amplitud",
+      speedMin: "Veloc. mín",
+      speedMax: "Veloc. máx",
+      hueMin: "Tono mín",
+      hueMax: "Tono máx",
+      cardAlpha: "Tarjetas alfa",
+      headerAlpha: "Header alfa",
+      sidebarAlpha: "Sidebar alfa",
+    },
+    cs: {
+      title: "Canvas Ribbons",
+      enablePanel: "Povoleno na tomto panelu",
+      refreshHint: "Obnovte stránku (F5) pro použití",
+      reset: "Obnovit",
+      waves: "Vlny",
+      trailWidth: "Délka stopy",
+      rotation: "Rotace",
+      amplitude: "Amplituda",
+      speedMin: "Rychl. min",
+      speedMax: "Rychl. max",
+      hueMin: "Odstín min",
+      hueMax: "Odstín max",
+      cardAlpha: "Karty alfa",
+      headerAlpha: "Header alfa",
+      sidebarAlpha: "Sidebar alfa",
+    },
+  };
+
+  function detectLang() {
+    var lang = (document.documentElement.lang || navigator.language || "en").toLowerCase().split("-")[0];
+    return TRANSLATIONS[lang] ? lang : "en";
+  }
+  var T = TRANSLATIONS[detectLang()];
   function rnd(a, b) { return b === undefined ? Math.random() * a : a + Math.random() * (b - a); }
   function rndSign() { return Math.random() > 0.5 ? 1 : -1; }
   function degToRad(d) { return (d * Math.PI) / 180; }
@@ -154,17 +249,17 @@ const VERSION = "1.2.0";
     if (panel) { panel.style.display = panel.style.display === "none" ? "flex" : "none"; return; }
 
     var sliders = [
-      { key: "waves",        label: "Wstegi",              min: 1,     max: 8,     step: 1,     val: opts.waves,        restart: true },
-      { key: "width",        label: "Dlug. sladu",         min: 20,    max: 300,   step: 10,    val: opts.width         },
-      { key: "rotation",     label: "Rotacja",             min: 0,     max: 360,   step: 5,     val: opts.rotation      },
-      { key: "amplitude",    label: "Amplituda",           min: 0.1,   max: 2.0,   step: 0.1,   val: opts.amplitude     },
-      { key: "speedMin",     label: "Predk. min",          min: 0.001, max: 0.02,  step: 0.001, val: opts.speed[0]      },
-      { key: "speedMax",     label: "Predk. max",          min: 0.002, max: 0.04,  step: 0.001, val: opts.speed[1]      },
-      { key: "hueMin",       label: "Hue min",             min: 0,     max: 30,    step: 1,     val: opts.hue[0]        },
-      { key: "hueMax",       label: "Hue max",             min: 0,     max: 30,    step: 1,     val: opts.hue[1]        },
-      { key: "cardAlpha",    label: "Karty alfa",          min: 0,     max: 1,     step: 0.05,  val: opts.cardAlpha     },
-      { key: "headerAlpha",  label: "Header alfa",         min: 0,     max: 1,     step: 0.05,  val: opts.headerAlpha   },
-      { key: "sidebarAlpha", label: "Sidebar alfa",        min: 0,     max: 1,     step: 0.05,  val: opts.sidebarAlpha  },
+      { key: "waves",        label: T.waves,        min: 1,     max: 8,     step: 1,     val: opts.waves,        restart: true },
+      { key: "width",        label: T.trailWidth,    min: 20,    max: 300,   step: 10,    val: opts.width         },
+      { key: "rotation",     label: T.rotation,      min: 0,     max: 360,   step: 5,     val: opts.rotation      },
+      { key: "amplitude",    label: T.amplitude,     min: 0.1,   max: 2.0,   step: 0.1,   val: opts.amplitude     },
+      { key: "speedMin",     label: T.speedMin,      min: 0.001, max: 0.02,  step: 0.001, val: opts.speed[0]      },
+      { key: "speedMax",     label: T.speedMax,      min: 0.002, max: 0.04,  step: 0.001, val: opts.speed[1]      },
+      { key: "hueMin",       label: T.hueMin,        min: 0,     max: 30,    step: 1,     val: opts.hue[0]        },
+      { key: "hueMax",       label: T.hueMax,        min: 0,     max: 30,    step: 1,     val: opts.hue[1]        },
+      { key: "cardAlpha",    label: T.cardAlpha,     min: 0,     max: 1,     step: 0.05,  val: opts.cardAlpha     },
+      { key: "headerAlpha",  label: T.headerAlpha,   min: 0,     max: 1,     step: 0.05,  val: opts.headerAlpha   },
+      { key: "sidebarAlpha", label: T.sidebarAlpha,  min: 0,     max: 1,     step: 0.05,  val: opts.sidebarAlpha  },
     ];
 
     panel = document.createElement("div");
@@ -180,7 +275,7 @@ const VERSION = "1.2.0";
     var titleBar = document.createElement("div");
     titleBar.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;";
     var title = document.createElement("span");
-    title.textContent = "Canvas Ribbons";
+    title.textContent = T.title;
     title.style.cssText = "font-size:14px;font-weight:600;letter-spacing:0.3px;";
     var closeBtn = document.createElement("button");
     closeBtn.textContent = "\u2715";
@@ -204,7 +299,7 @@ const VERSION = "1.2.0";
     toggleCb.style.cssText = "accent-color:#6d8fff;cursor:pointer;width:14px;height:14px;";
 
     var toggleText = document.createElement("span");
-    toggleText.textContent = "Wlaczone na tym panelu";
+    toggleText.textContent = T.enablePanel;
 
     var panelPathLabel = document.createElement("div");
     panelPathLabel.textContent = panelPath;
@@ -301,7 +396,7 @@ const VERSION = "1.2.0";
             hint = document.createElement("div");
             hint.id = "ribbon-restart-hint";
             hint.style.cssText = "color:#f90;font-size:11px;text-align:center;padding:2px 0;";
-            hint.textContent = "Odswiez strone (F5) aby zastosowac";
+            hint.textContent = T.refreshHint;
             panel.appendChild(hint);
           }
         }
@@ -318,7 +413,7 @@ const VERSION = "1.2.0";
     btnRow.style.cssText = "display:flex;gap:8px;margin-top:6px;";
 
     var resetBtn = document.createElement("button");
-    resetBtn.textContent = "Reset";
+    resetBtn.textContent = T.reset;
     resetBtn.style.cssText =
       "flex:1;padding:6px 0;border:1px solid rgba(255,255,255,0.15);border-radius:6px;" +
       "background:rgba(255,255,255,0.06);color:#ccc;cursor:pointer;font-size:11px;";
