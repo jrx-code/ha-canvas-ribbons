@@ -1,0 +1,19 @@
+{
+  "name": "ha-canvas-ribbons",
+  "version": "1.0.0",
+  "description": "",
+  "main": "canvas-ribbons.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.iwanus.eu:jiwanus/ha-canvas-ribbons.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jsdom": "^28.1.0"
+  }
+}
