@@ -10,6 +10,21 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 
 ![Preview](screenshots/preview.png)
 
+## Changelog
+
+| Version | Type | Description |
+|---|---|---|
+| **1.x** | **Major** | **Single-file HACS plugin with canvas ribbon animation** |
+| 1.7 | Minor | Save & close button (blue, default action) |
+| 1.7.1 | Fix | Preset dropdown: dark theme colors, retain selection |
+| 1.6 | Minor | 16 presets in 4 categories (Games, Seasons, Time of day, Themes) |
+| 1.5 | Minor | Saturation and brightness controls |
+| 1.4 | Minor | Hue position+range sliders with rainbow gradient and color preview |
+| 1.3 | Minor | i18n: PL, EN, DE, ES, CS with auto-detection |
+| 1.2 | Minor | Per-panel enable/disable, security fixes (H1–H4) |
+| 1.1 | Minor | GUI configuration panel, localStorage persistence |
+| 1.0 | Minor | Initial release — canvas ribbons, HA theme transparency |
+
 ## Features
 
 - Animated ribbon background rendered on HTML5 Canvas
