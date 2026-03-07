@@ -1,6 +1,8 @@
 {
   "name": "Canvas Ribbons Background",
+  "type": "plugin",
   "render_readme": true,
   "filename": "ha-canvas-ribbons.js",
-  "content_in_root": false
+  "content_in_root": false,
+  "homeassistant": "2024.1.0"
 }
