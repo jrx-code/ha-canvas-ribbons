@@ -17,8 +17,6 @@ stages:
 # ===== STAGE: LINT (main + publish) =========================================
 lint:
   stage: lint
-  before_script:
-    - apk add --no-cache nodejs 2>/dev/null || true
   script:
     - echo "=== JavaScript syntax check ==="
     - node --check dist/ha-canvas-ribbons.js
@@ -35,8 +33,6 @@ lint:
 # ===== STAGE: TEST (main + publish) =========================================
 test:
   stage: test
-  before_script:
-    - apk add --no-cache nodejs npm 2>/dev/null || true
   script:
     - npm install --no-audit --no-fund 2>/dev/null
     - node canvas-ribbons.test.js
@@ -46,8 +42,6 @@ test:
 # ===== STAGE: SECURITY (publish only) =======================================
 security:
   stage: security
-  before_script:
-    - apk add --no-cache nodejs npm 2>/dev/null || true
   script:
     - echo "=== Security scan (ha-canvas-ribbons.js) ==="
     - grep -n 'innerHTML\s*=' dist/ha-canvas-ribbons.js | grep -v textContent && echo "WARN H1 innerHTML" || true
