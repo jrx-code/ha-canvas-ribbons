@@ -255,10 +255,19 @@ const VERSION = "1.1.0";
     btnRow.appendChild(resetBtn);
     panel.appendChild(btnRow);
 
-    // Version
+    // Version + GitHub link
     var ver = document.createElement("div");
-    ver.textContent = "v" + VERSION;
-    ver.style.cssText = "text-align:center;color:#555;font-size:10px;margin-top:2px;";
+    ver.style.cssText = "text-align:center;font-size:10px;margin-top:2px;";
+    var verText = document.createTextNode("v" + VERSION + " \u2022 ");
+    var ghLink = document.createElement("a");
+    ghLink.href = "https://github.com/jrx-code/ha-canvas-ribbons";
+    ghLink.target = "_blank";
+    ghLink.rel = "noopener noreferrer";
+    ghLink.textContent = "GitHub";
+    ghLink.style.cssText = "color:#6d8fff;text-decoration:none;";
+    ver.style.color = "#555";
+    ver.appendChild(verText);
+    ver.appendChild(ghLink);
     panel.appendChild(ver);
 
     document.body.appendChild(panel);
@@ -371,9 +380,9 @@ const VERSION = "1.1.0";
     resize();
     window.addEventListener("resize", resize);
 
-    // Waves
+    // Waves (clamped as defense-in-depth against malformed config)
     var waves = [];
-    for (var i = 0; i < opts.waves; i++) waves.push(new Wave(state));
+    for (var i = 0; i < Math.min(opts.waves, 8); i++) waves.push(new Wave(state));
 
     function updateColor() {
       state.hue += state.hueFw ? 0.01 : -0.01;
@@ -385,10 +394,12 @@ const VERSION = "1.1.0";
       state.color = "rgba(" + r + "," + g + "," + b + ",0.1)";
     }
 
-    // Preload
-    for (var i = 0; i < opts.waves; i++) {
+    // Preload (clamped to safe maximums as defense-in-depth)
+    var safeWaves = Math.min(opts.waves, 8);
+    var safeWidth = Math.min(opts.width, 300);
+    for (var i = 0; i < safeWaves; i++) {
       updateColor();
-      for (var j = 0; j < opts.width; j++) waves[i].update();
+      for (var j = 0; j < safeWidth; j++) waves[i].update();
     }
 
     var rafId = null;
