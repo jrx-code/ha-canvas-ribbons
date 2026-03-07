@@ -2,7 +2,7 @@
 // https://github.com/jrx-code/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.3.0";
+const VERSION = "1.4.0";
 
 (function () {
   "use strict";
@@ -24,8 +24,8 @@ const VERSION = "1.3.0";
       amplitude: "Amplitude",
       speedMin: "Speed min",
       speedMax: "Speed max",
-      hueMin: "Hue min",
-      hueMax: "Hue max",
+      huePosition: "Hue",
+      hueRange: "Hue range",
       cardAlpha: "Card alpha",
       headerAlpha: "Header alpha",
       sidebarAlpha: "Sidebar alpha",
@@ -41,8 +41,8 @@ const VERSION = "1.3.0";
       amplitude: "Amplituda",
       speedMin: "Prędk. min",
       speedMax: "Prędk. max",
-      hueMin: "Barwa min",
-      hueMax: "Barwa max",
+      huePosition: "Barwa",
+      hueRange: "Zakres barwy",
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
@@ -58,8 +58,8 @@ const VERSION = "1.3.0";
       amplitude: "Amplitude",
       speedMin: "Geschw. min",
       speedMax: "Geschw. max",
-      hueMin: "Farbton min",
-      hueMax: "Farbton max",
+      huePosition: "Farbton",
+      hueRange: "Farbtonbreite",
       cardAlpha: "Karten-Alpha",
       headerAlpha: "Header-Alpha",
       sidebarAlpha: "Sidebar-Alpha",
@@ -75,8 +75,8 @@ const VERSION = "1.3.0";
       amplitude: "Amplitud",
       speedMin: "Veloc. mín",
       speedMax: "Veloc. máx",
-      hueMin: "Tono mín",
-      hueMax: "Tono máx",
+      huePosition: "Tono",
+      hueRange: "Rango tono",
       cardAlpha: "Tarjetas alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
@@ -92,8 +92,8 @@ const VERSION = "1.3.0";
       amplitude: "Amplituda",
       speedMin: "Rychl. min",
       speedMax: "Rychl. max",
-      hueMin: "Odstín min",
-      hueMax: "Odstín max",
+      huePosition: "Odstín",
+      hueRange: "Rozsah odstínu",
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
@@ -255,8 +255,6 @@ const VERSION = "1.3.0";
       { key: "amplitude",    label: T.amplitude,     min: 0.1,   max: 2.0,   step: 0.1,   val: opts.amplitude     },
       { key: "speedMin",     label: T.speedMin,      min: 0.001, max: 0.02,  step: 0.001, val: opts.speed[0]      },
       { key: "speedMax",     label: T.speedMax,      min: 0.002, max: 0.04,  step: 0.001, val: opts.speed[1]      },
-      { key: "hueMin",       label: T.hueMin,        min: 0,     max: 30,    step: 1,     val: opts.hue[0]        },
-      { key: "hueMax",       label: T.hueMax,        min: 0,     max: 30,    step: 1,     val: opts.hue[1]        },
       { key: "cardAlpha",    label: T.cardAlpha,     min: 0,     max: 1,     step: 0.05,  val: opts.cardAlpha     },
       { key: "headerAlpha",  label: T.headerAlpha,   min: 0,     max: 1,     step: 0.05,  val: opts.headerAlpha   },
       { key: "sidebarAlpha", label: T.sidebarAlpha,  min: 0,     max: 1,     step: 0.05,  val: opts.sidebarAlpha  },
@@ -373,8 +371,6 @@ const VERSION = "1.3.0";
 
         if (s.key === "speedMin") { opts.speed[0] = v; }
         else if (s.key === "speedMax") { opts.speed[1] = v; }
-        else if (s.key === "hueMin") { opts.hue[0] = v; }
-        else if (s.key === "hueMax") { opts.hue[1] = v; }
         else { opts[s.key] = v; }
 
         if (s.key === "cardAlpha" || s.key === "headerAlpha" || s.key === "sidebarAlpha") {
@@ -407,6 +403,125 @@ const VERSION = "1.3.0";
       row.appendChild(valSpan);
       panel.appendChild(row);
     });
+
+    // Inject slider thumb styles for hue rainbow slider
+    if (!document.getElementById("ha-canvas-ribbons-hue-style")) {
+      var hueStyle = document.createElement("style");
+      hueStyle.id = "ha-canvas-ribbons-hue-style";
+      hueStyle.textContent =
+        "#ha-canvas-ribbons-hue::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #333;box-shadow:0 1px 4px rgba(0,0,0,0.5);cursor:pointer;}" +
+        "#ha-canvas-ribbons-hue::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #333;box-shadow:0 1px 4px rgba(0,0,0,0.5);cursor:pointer;}" +
+        "#ha-canvas-ribbons-hue::-moz-range-track{height:12px;border-radius:6px;}";
+      document.head.appendChild(hueStyle);
+    }
+
+    // --- Hue position + range sliders with color preview ---
+    function hueToRgb(h) {
+      var r = Math.floor(127 * Math.sin(0.3 * h) + 128);
+      var g = Math.floor(127 * Math.sin(0.3 * h + 2) + 128);
+      var b = Math.floor(127 * Math.sin(0.3 * h + 4) + 128);
+      return "rgb(" + r + "," + g + "," + b + ")";
+    }
+
+    function buildRainbowGradient() {
+      var stops = [];
+      for (var i = 0; i <= 10; i++) {
+        var h = (i / 10) * 30;
+        stops.push(hueToRgb(h) + " " + (i * 10) + "%");
+      }
+      return "linear-gradient(to right," + stops.join(",") + ")";
+    }
+
+    var huePos = (opts.hue[0] + opts.hue[1]) / 2;
+    var hueWidth = opts.hue[1] - opts.hue[0];
+
+    function updateHuePreview() {
+      if (huePreviewBar) {
+        var lo = Math.max(0, huePos - hueWidth / 2);
+        var hi = Math.min(30, huePos + hueWidth / 2);
+        var stops = [];
+        var steps = Math.max(2, Math.round((hi - lo) * 2));
+        for (var i = 0; i <= steps; i++) {
+          var h = lo + (i / steps) * (hi - lo);
+          stops.push(hueToRgb(h));
+        }
+        huePreviewBar.style.background = stops.length > 1
+          ? "linear-gradient(to right," + stops.join(",") + ")"
+          : stops[0];
+      }
+    }
+
+    function onHueChange() {
+      opts.hue[0] = Math.max(0, huePos - hueWidth / 2);
+      opts.hue[1] = Math.min(30, huePos + hueWidth / 2);
+      updateHuePreview();
+      saveConfig({
+        waves: opts.waves, width: opts.width, rotation: opts.rotation,
+        amplitude: opts.amplitude, speed: [opts.speed[0], opts.speed[1]],
+        hue: [opts.hue[0], opts.hue[1]], cardAlpha: opts.cardAlpha,
+        headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
+      });
+    }
+
+    // Hue position slider
+    var huePosRow = document.createElement("div");
+    huePosRow.style.cssText = "display:flex;align-items:center;gap:8px;";
+    var huePosLbl = document.createElement("label");
+    huePosLbl.textContent = T.huePosition;
+    huePosLbl.style.cssText = "min-width:90px;color:#aaa;font-size:11px;";
+    var huePosInput = document.createElement("input");
+    huePosInput.id = "ha-canvas-ribbons-hue";
+    huePosInput.type = "range";
+    huePosInput.min = 0;
+    huePosInput.max = 30;
+    huePosInput.step = 0.5;
+    huePosInput.value = huePos;
+    huePosInput.style.cssText = "flex:1;height:12px;cursor:pointer;-webkit-appearance:none;appearance:none;" +
+      "border-radius:6px;outline:none;background:" + buildRainbowGradient() + ";";
+    var huePosVal = document.createElement("span");
+    huePosVal.textContent = huePos.toFixed(1);
+    huePosVal.style.cssText = "min-width:36px;text-align:right;font-size:11px;color:#ccc;font-variant-numeric:tabular-nums;";
+    huePosInput.oninput = function () {
+      huePos = parseFloat(this.value);
+      huePosVal.textContent = huePos.toFixed(1);
+      onHueChange();
+    };
+    huePosRow.appendChild(huePosLbl);
+    huePosRow.appendChild(huePosInput);
+    huePosRow.appendChild(huePosVal);
+    panel.appendChild(huePosRow);
+
+    // Hue range slider
+    var hueRngRow = document.createElement("div");
+    hueRngRow.style.cssText = "display:flex;align-items:center;gap:8px;";
+    var hueRngLbl = document.createElement("label");
+    hueRngLbl.textContent = T.hueRange;
+    hueRngLbl.style.cssText = "min-width:90px;color:#aaa;font-size:11px;";
+    var hueRngInput = document.createElement("input");
+    hueRngInput.type = "range";
+    hueRngInput.min = 0;
+    hueRngInput.max = 15;
+    hueRngInput.step = 0.5;
+    hueRngInput.value = hueWidth;
+    hueRngInput.style.cssText = "flex:1;accent-color:#6d8fff;height:4px;cursor:pointer;";
+    var hueRngVal = document.createElement("span");
+    hueRngVal.textContent = hueWidth.toFixed(1);
+    hueRngVal.style.cssText = "min-width:36px;text-align:right;font-size:11px;color:#ccc;font-variant-numeric:tabular-nums;";
+    hueRngInput.oninput = function () {
+      hueWidth = parseFloat(this.value);
+      hueRngVal.textContent = hueWidth.toFixed(1);
+      onHueChange();
+    };
+    hueRngRow.appendChild(hueRngLbl);
+    hueRngRow.appendChild(hueRngInput);
+    hueRngRow.appendChild(hueRngVal);
+    panel.appendChild(hueRngRow);
+
+    // Color preview bar
+    var huePreviewBar = document.createElement("div");
+    huePreviewBar.style.cssText = "height:8px;border-radius:4px;margin:2px 0 4px 0;";
+    updateHuePreview();
+    panel.appendChild(huePreviewBar);
 
     // Reset button
     var btnRow = document.createElement("div");
@@ -656,6 +771,8 @@ const VERSION = "1.3.0";
       if (gui) gui.remove();
       var tog = document.getElementById("ha-canvas-ribbons-toggle");
       if (tog) tog.remove();
+      var hs = document.getElementById("ha-canvas-ribbons-hue-style");
+      if (hs) hs.remove();
       delete window._haCanvasRibbonsDestroy;
     };
 
