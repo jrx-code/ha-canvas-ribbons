@@ -85,7 +85,11 @@ wiki-update:
 # ===== STAGE: GITHUB MIRROR (publish only) ==================================
 github-mirror:
   stage: mirror
+  variables:
+    GIT_DEPTH: 0
   script:
+    - git fetch --unshallow origin 2>/dev/null || git fetch origin
+    - git fetch origin --tags
     - git remote set-url github https://jrx-code:${GITHUB_TOKEN}@github.com/jrx-code/ha-canvas-ribbons.git 2>/dev/null || git remote add github https://jrx-code:${GITHUB_TOKEN}@github.com/jrx-code/ha-canvas-ribbons.git
     - git push github HEAD:main --force
     - git push github --tags --force 2>/dev/null || true
