@@ -14,7 +14,7 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 
 - Animated ribbon background rendered on HTML5 Canvas
 - **GUI configuration panel** — click the button in the bottom-right corner
-- 11 configurable parameters (waves, speed, colors, transparency)
+- 13 configurable parameters (waves, speed, colors, saturation, brightness, transparency)
 - Settings persisted to `localStorage`
 - Automatic HA theme transparency (cards, header, sidebar)
 - Lightweight (~6 KB), no dependencies
@@ -52,7 +52,10 @@ Click the floating button in the bottom-right corner to open the settings panel:
 | Rotation | 0–360° | yes | Rotation angle |
 | Amplitude | 0.1–2.0 | yes | Wave amplitude |
 | Speed min/max | 0.001–0.04 | yes | Animation speed range |
-| Hue min/max | 0–30 | yes | Color hue range |
+| Hue | 0–30 | yes | Color hue position (rainbow slider) |
+| Hue range | 0–15 | yes | Color oscillation width |
+| Saturation | 0–1 | yes | Color saturation |
+| Brightness | 0–1 | yes | Color brightness |
 | Card alpha | 0–1 | yes | Card background opacity |
 | Header alpha | 0–1 | yes | Header opacity |
 | Sidebar alpha | 0–1 | yes | Sidebar opacity |
@@ -72,6 +75,8 @@ You can also set config programmatically via `window.canvasRibbonsConfig`:
     amplitude: 0.5,        // wave amplitude (default: 0.5)
     speed: [0.004, 0.008], // min/max animation speed
     hue: [11, 14],         // hue oscillation range
+    saturation: 0.8,       // color saturation (default: 0.8)
+    brightness: 1.0,       // color brightness (default: 1.0)
     cardAlpha: 0.85,       // card background opacity (default: 0.85)
     headerAlpha: 0.7,      // header opacity (default: 0.7)
     sidebarAlpha: 0.8,     // sidebar opacity (default: 0.8)
