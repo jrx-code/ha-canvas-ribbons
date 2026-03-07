@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Canvas Ribbons</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #000; overflow: hidden; }
+      #holder {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="holder"></div>
+    <script src="canvas-ribbons.js"></script>
+    <script>
+      var ribbons = new CanvasRibbons("#holder", {
+        waves: 3,
+        width: 120,
+        speed: [0.004, 0.008],
+        amplitude: 0.5,
+      });
+      ribbons.start();
+    </script>
+  </body>
+</html>
