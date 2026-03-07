@@ -2,7 +2,7 @@
 // https://github.com/jrx-code/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.5.0";
+const VERSION = "1.6.0";
 
 (function () {
   "use strict";
@@ -31,6 +31,12 @@ const VERSION = "1.5.0";
       cardAlpha: "Card alpha",
       headerAlpha: "Header alpha",
       sidebarAlpha: "Sidebar alpha",
+      preset: "Preset",
+      presetCustom: "Custom",
+      presetCatGames: "Games",
+      presetCatSeasons: "Seasons",
+      presetCatDaytime: "Time of day",
+      presetCatThemes: "Themes",
     },
     pl: {
       title: "Canvas Ribbons",
@@ -50,6 +56,12 @@ const VERSION = "1.5.0";
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
+      preset: "Preset",
+      presetCustom: "Własny",
+      presetCatGames: "Gry",
+      presetCatSeasons: "Pory roku",
+      presetCatDaytime: "Pora dnia",
+      presetCatThemes: "Motywy",
     },
     de: {
       title: "Canvas Ribbons",
@@ -69,6 +81,12 @@ const VERSION = "1.5.0";
       cardAlpha: "Karten-Alpha",
       headerAlpha: "Header-Alpha",
       sidebarAlpha: "Sidebar-Alpha",
+      preset: "Vorlage",
+      presetCustom: "Eigene",
+      presetCatGames: "Spiele",
+      presetCatSeasons: "Jahreszeiten",
+      presetCatDaytime: "Tageszeit",
+      presetCatThemes: "Designs",
     },
     es: {
       title: "Canvas Ribbons",
@@ -88,6 +106,12 @@ const VERSION = "1.5.0";
       cardAlpha: "Tarjetas alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
+      preset: "Preajuste",
+      presetCustom: "Personal.",
+      presetCatGames: "Juegos",
+      presetCatSeasons: "Estaciones",
+      presetCatDaytime: "Hora del día",
+      presetCatThemes: "Temas",
     },
     cs: {
       title: "Canvas Ribbons",
@@ -107,6 +131,12 @@ const VERSION = "1.5.0";
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
+      preset: "Předvolba",
+      presetCustom: "Vlastní",
+      presetCatGames: "Hry",
+      presetCatSeasons: "Roční období",
+      presetCatDaytime: "Denní doba",
+      presetCatThemes: "Motivy",
     },
   };
 
@@ -115,6 +145,31 @@ const VERSION = "1.5.0";
     return TRANSLATIONS[lang] ? lang : "en";
   }
   var T = TRANSLATIONS[detectLang()];
+
+  // --- Presets ---
+  var PRESETS = [
+    // Games
+    { id: "pipboy",       cat: "presetCatGames",   name: "Pip-Boy",       waves:2, width:80,  rotation:30,  amplitude:0.3, speed:[0.002,0.005], hue:[19,21], saturation:0.9,  brightness:0.6  },
+    { id: "neoncity",     cat: "presetCatGames",   name: "Neon City",     waves:4, width:150, rotation:60,  amplitude:0.8, speed:[0.006,0.012], hue:[8,16],  saturation:1.0,  brightness:1.0  },
+    { id: "digitalrain",  cat: "presetCatGames",   name: "Digital Rain",  waves:6, width:200, rotation:90,  amplitude:0.2, speed:[0.004,0.008], hue:[19.5,20.5], saturation:1.0, brightness:0.45 },
+    { id: "underworld",   cat: "presetCatGames",   name: "Underworld",    waves:3, width:100, rotation:40,  amplitude:0.6, speed:[0.004,0.008], hue:[3.5,6.5], saturation:0.95, brightness:0.7  },
+    // Seasons
+    { id: "spring",       cat: "presetCatSeasons",  name: "Wiosna",        waves:3, width:120, rotation:45,  amplitude:0.5, speed:[0.003,0.006], hue:[17.5,22.5], saturation:0.7, brightness:0.9  },
+    { id: "summer",       cat: "presetCatSeasons",  name: "Lato",          waves:4, width:140, rotation:50,  amplitude:0.6, speed:[0.004,0.008], hue:[23,27], saturation:0.85, brightness:1.0  },
+    { id: "autumn",       cat: "presetCatSeasons",  name: "Jesień",        waves:3, width:100, rotation:35,  amplitude:0.4, speed:[0.003,0.006], hue:[2,8],   saturation:0.75, brightness:0.65 },
+    { id: "winter",       cat: "presetCatSeasons",  name: "Zima",          waves:2, width:90,  rotation:40,  amplitude:0.3, speed:[0.002,0.005], hue:[13.5,16.5], saturation:0.25, brightness:0.85 },
+    // Time of day
+    { id: "dawn",         cat: "presetCatDaytime",  name: "Świt",          waves:3, width:130, rotation:45,  amplitude:0.5, speed:[0.003,0.006], hue:[20,30], saturation:0.6,  brightness:0.75 },
+    { id: "noon",         cat: "presetCatDaytime",  name: "Południe",      waves:2, width:80,  rotation:45,  amplitude:0.3, speed:[0.002,0.005], hue:[12.5,17.5], saturation:0.5, brightness:1.0  },
+    { id: "sunset",       cat: "presetCatDaytime",  name: "Zachód",        waves:4, width:150, rotation:55,  amplitude:0.7, speed:[0.004,0.008], hue:[1,9],   saturation:1.0,  brightness:0.8  },
+    { id: "night",        cat: "presetCatDaytime",  name: "Noc",           waves:2, width:100, rotation:40,  amplitude:0.4, speed:[0.002,0.005], hue:[10,14], saturation:0.6,  brightness:0.35 },
+    // Themes
+    { id: "iosdark",      cat: "presetCatThemes",   name: "iOS Dark",      waves:2, width:90,  rotation:40,  amplitude:0.3, speed:[0.002,0.004], hue:[14,16], saturation:0.2,  brightness:0.5  },
+    { id: "materialyou",  cat: "presetCatThemes",   name: "Material You",  waves:3, width:120, rotation:45,  amplitude:0.5, speed:[0.004,0.007], hue:[15,21], saturation:0.9,  brightness:0.85 },
+    { id: "amoled",       cat: "presetCatThemes",   name: "AMOLED",        waves:2, width:70,  rotation:35,  amplitude:0.2, speed:[0.002,0.004], hue:[9,11],  saturation:0.4,  brightness:0.2  },
+    { id: "monokai",      cat: "presetCatThemes",   name: "Monokai",       waves:3, width:110, rotation:45,  amplitude:0.5, speed:[0.004,0.007], hue:[2.5,7.5], saturation:0.8, brightness:0.55 },
+  ];
+
   function rnd(a, b) { return b === undefined ? Math.random() * a : a + Math.random() * (b - a); }
   function rndSign() { return Math.random() > 0.5 ? 1 : -1; }
   function degToRad(d) { return (d * Math.PI) / 180; }
@@ -340,6 +395,105 @@ const VERSION = "1.5.0";
     panel.appendChild(toggleRow);
     panel.appendChild(panelPathLabel);
 
+    // --- Preset selector ---
+    var presetRow = document.createElement("div");
+    presetRow.style.cssText = "display:flex;align-items:center;gap:8px;padding:4px 0 6px 0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;";
+    var presetLbl = document.createElement("label");
+    presetLbl.textContent = T.preset;
+    presetLbl.style.cssText = "min-width:90px;color:#aaa;font-size:11px;";
+    var presetSelect = document.createElement("select");
+    presetSelect.style.cssText = "flex:1;background:rgba(255,255,255,0.08);color:#ccc;border:1px solid rgba(255,255,255,0.15);" +
+      "border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer;outline:none;";
+
+    var customOpt = document.createElement("option");
+    customOpt.value = "";
+    customOpt.textContent = T.presetCustom;
+    presetSelect.appendChild(customOpt);
+
+    var lastCat = "";
+    PRESETS.forEach(function (p) {
+      if (p.cat !== lastCat) {
+        var grp = document.createElement("optgroup");
+        grp.label = T[p.cat] || p.cat;
+        PRESETS.forEach(function (pp) {
+          if (pp.cat === p.cat) {
+            var o = document.createElement("option");
+            o.value = pp.id;
+            o.textContent = pp.name;
+            grp.appendChild(o);
+          }
+        });
+        presetSelect.appendChild(grp);
+        lastCat = p.cat;
+      }
+    });
+
+    function applyPreset(p) {
+      opts.waves = p.waves; opts.width = p.width; opts.rotation = p.rotation;
+      opts.amplitude = p.amplitude; opts.speed = [p.speed[0], p.speed[1]];
+      opts.hue = [p.hue[0], p.hue[1]]; opts.saturation = p.saturation;
+      opts.brightness = p.brightness;
+
+      // Update all slider inputs
+      var inputs = panel.querySelectorAll("input[type=range]");
+      inputs.forEach(function (inp) {
+        var key = inp.dataset.key;
+        if (!key) return;
+        var v;
+        if (key === "speedMin") v = opts.speed[0];
+        else if (key === "speedMax") v = opts.speed[1];
+        else if (key === "saturation") v = opts.saturation;
+        else if (key === "brightness") v = opts.brightness;
+        else v = opts[key];
+        if (v !== undefined) {
+          inp.value = v;
+          var ev = new Event("input", { bubbles: true });
+          inp.dispatchEvent(ev);
+        }
+      });
+
+      // Update hue position/range sliders
+      if (huePosInput) {
+        huePos = (p.hue[0] + p.hue[1]) / 2;
+        hueWidth = p.hue[1] - p.hue[0];
+        huePosInput.value = huePos;
+        huePosVal.textContent = huePos.toFixed(1);
+        hueRngInput.value = hueWidth;
+        hueRngVal.textContent = hueWidth.toFixed(1);
+        huePosInput.style.background = buildRainbowGradient();
+        updateHuePreview();
+      }
+
+      saveConfig({
+        waves: opts.waves, width: opts.width, rotation: opts.rotation,
+        amplitude: opts.amplitude, speed: [opts.speed[0], opts.speed[1]],
+        hue: [opts.hue[0], opts.hue[1]], saturation: opts.saturation,
+        brightness: opts.brightness, cardAlpha: opts.cardAlpha,
+        headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
+      });
+
+      // Show restart hint for waves change
+      var hint = document.getElementById("ribbon-restart-hint");
+      if (!hint) {
+        hint = document.createElement("div");
+        hint.id = "ribbon-restart-hint";
+        hint.style.cssText = "color:#f90;font-size:11px;text-align:center;padding:2px 0;";
+        hint.textContent = T.refreshHint;
+        panel.appendChild(hint);
+      }
+    }
+
+    presetSelect.onchange = function () {
+      var id = this.value;
+      if (!id) return;
+      var p = PRESETS.find(function (x) { return x.id === id; });
+      if (p) applyPreset(p);
+    };
+
+    presetRow.appendChild(presetLbl);
+    presetRow.appendChild(presetSelect);
+    panel.appendChild(presetRow);
+
     var valueDisplays = {};
 
     function updateStyle() {
@@ -371,6 +525,7 @@ const VERSION = "1.5.0";
 
       var input = document.createElement("input");
       input.type = "range";
+      input.dataset.key = s.key;
       input.min = s.min;
       input.max = s.max;
       input.step = s.step;
@@ -386,6 +541,7 @@ const VERSION = "1.5.0";
         var v = parseFloat(this.value);
         var decimals = s.step < 1 ? String(s.step).split(".")[1].length : 0;
         valSpan.textContent = v.toFixed(decimals);
+        presetSelect.value = "";
 
         if (s.key === "speedMin") { opts.speed[0] = v; }
         else if (s.key === "speedMax") { opts.speed[1] = v; }
@@ -512,6 +668,7 @@ const VERSION = "1.5.0";
     huePosInput.oninput = function () {
       huePos = parseFloat(this.value);
       huePosVal.textContent = huePos.toFixed(1);
+      presetSelect.value = "";
       onHueChange();
     };
     huePosRow.appendChild(huePosLbl);
@@ -538,6 +695,7 @@ const VERSION = "1.5.0";
     hueRngInput.oninput = function () {
       hueWidth = parseFloat(this.value);
       hueRngVal.textContent = hueWidth.toFixed(1);
+      presetSelect.value = "";
       onHueChange();
     };
     hueRngRow.appendChild(hueRngLbl);
