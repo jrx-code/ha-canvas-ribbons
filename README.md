@@ -15,8 +15,10 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 | Version | Type | Description |
 |---|---|---|
 | **1.x** | **Major** | **Single-file HACS plugin with canvas ribbon animation** |
+| 1.8 | Minor | Auto-preset based on sun position (elevation + rising) |
 | 1.7 | Minor | Save & close button (blue, default action) |
 | 1.7.1 | Fix | Preset dropdown: dark theme colors, retain selection |
+| 1.7.2 | Fix | HACS validation: remove deprecated type field, add topics |
 | 1.6 | Minor | 16 presets in 4 categories (Games, Seasons, Time of day, Themes) |
 | 1.5 | Minor | Saturation and brightness controls |
 | 1.4 | Minor | Hue position+range sliders with rainbow gradient and color preview |
