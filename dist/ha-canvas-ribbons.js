@@ -2,7 +2,7 @@
 // https://gitlab.iwanus.eu/jiwanus/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.4.0";
+const VERSION = "1.5.0";
 
 (function () {
   "use strict";
@@ -26,6 +26,8 @@ const VERSION = "1.4.0";
       speedMax: "Speed max",
       huePosition: "Hue",
       hueRange: "Hue range",
+      saturation: "Saturation",
+      brightness: "Brightness",
       cardAlpha: "Card alpha",
       headerAlpha: "Header alpha",
       sidebarAlpha: "Sidebar alpha",
@@ -43,6 +45,8 @@ const VERSION = "1.4.0";
       speedMax: "Prędk. max",
       huePosition: "Barwa",
       hueRange: "Zakres barwy",
+      saturation: "Nasycenie",
+      brightness: "Jasność",
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
@@ -60,6 +64,8 @@ const VERSION = "1.4.0";
       speedMax: "Geschw. max",
       huePosition: "Farbton",
       hueRange: "Farbtonbreite",
+      saturation: "Sättigung",
+      brightness: "Helligkeit",
       cardAlpha: "Karten-Alpha",
       headerAlpha: "Header-Alpha",
       sidebarAlpha: "Sidebar-Alpha",
@@ -77,6 +83,8 @@ const VERSION = "1.4.0";
       speedMax: "Veloc. máx",
       huePosition: "Tono",
       hueRange: "Rango tono",
+      saturation: "Saturación",
+      brightness: "Brillo",
       cardAlpha: "Tarjetas alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
@@ -94,6 +102,8 @@ const VERSION = "1.4.0";
       speedMax: "Rychl. max",
       huePosition: "Odstín",
       hueRange: "Rozsah odstínu",
+      saturation: "Sytost",
+      brightness: "Jas",
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
       sidebarAlpha: "Sidebar alfa",
@@ -160,6 +170,8 @@ const VERSION = "1.4.0";
     hue: [11, 14],
     amplitude: 0.5,
     speed: [0.004, 0.008],
+    saturation: 0.8,
+    brightness: 1.0,
     cardAlpha: 0.85,
     headerAlpha: 0.7,
     sidebarAlpha: 0.8,
@@ -184,6 +196,10 @@ const VERSION = "1.4.0";
       clean.cardAlpha = clamp(parsed.cardAlpha, 0, 1);
     if (typeof parsed.headerAlpha === "number" && isFinite(parsed.headerAlpha))
       clean.headerAlpha = clamp(parsed.headerAlpha, 0, 1);
+    if (typeof parsed.saturation === "number" && isFinite(parsed.saturation))
+      clean.saturation = clamp(parsed.saturation, 0, 1);
+    if (typeof parsed.brightness === "number" && isFinite(parsed.brightness))
+      clean.brightness = clamp(parsed.brightness, 0, 1);
     if (typeof parsed.sidebarAlpha === "number" && isFinite(parsed.sidebarAlpha))
       clean.sidebarAlpha = clamp(parsed.sidebarAlpha, 0, 1);
     if (Array.isArray(parsed.speed) && parsed.speed.length === 2 &&
@@ -255,7 +271,9 @@ const VERSION = "1.4.0";
       { key: "amplitude",    label: T.amplitude,     min: 0.1,   max: 2.0,   step: 0.1,   val: opts.amplitude     },
       { key: "speedMin",     label: T.speedMin,      min: 0.001, max: 0.02,  step: 0.001, val: opts.speed[0]      },
       { key: "speedMax",     label: T.speedMax,      min: 0.002, max: 0.04,  step: 0.001, val: opts.speed[1]      },
-      { key: "cardAlpha",    label: T.cardAlpha,     min: 0,     max: 1,     step: 0.05,  val: opts.cardAlpha     },
+      { key: "saturation",  label: T.saturation,    min: 0,     max: 1,     step: 0.05,  val: opts.saturation    },
+      { key: "brightness",  label: T.brightness,    min: 0,     max: 1,     step: 0.05,  val: opts.brightness    },
+      { key: "cardAlpha",   label: T.cardAlpha,     min: 0,     max: 1,     step: 0.05,  val: opts.cardAlpha     },
       { key: "headerAlpha",  label: T.headerAlpha,   min: 0,     max: 1,     step: 0.05,  val: opts.headerAlpha   },
       { key: "sidebarAlpha", label: T.sidebarAlpha,  min: 0,     max: 1,     step: 0.05,  val: opts.sidebarAlpha  },
     ];
@@ -376,12 +394,17 @@ const VERSION = "1.4.0";
         if (s.key === "cardAlpha" || s.key === "headerAlpha" || s.key === "sidebarAlpha") {
           updateStyle();
         }
+        if (s.key === "saturation" || s.key === "brightness") {
+          if (huePosInput) huePosInput.style.background = buildRainbowGradient();
+          updateHuePreview();
+        }
 
         // Save to localStorage
         saveConfig({
           waves: opts.waves, width: opts.width, rotation: opts.rotation,
           amplitude: opts.amplitude, speed: [opts.speed[0], opts.speed[1]],
-          hue: [opts.hue[0], opts.hue[1]], cardAlpha: opts.cardAlpha,
+          hue: [opts.hue[0], opts.hue[1]], saturation: opts.saturation,
+          brightness: opts.brightness, cardAlpha: opts.cardAlpha,
           headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
         });
 
@@ -417,9 +440,14 @@ const VERSION = "1.4.0";
 
     // --- Hue position + range sliders with color preview ---
     function hueToRgb(h) {
-      var r = Math.floor(127 * Math.sin(0.3 * h) + 128);
-      var g = Math.floor(127 * Math.sin(0.3 * h + 2) + 128);
-      var b = Math.floor(127 * Math.sin(0.3 * h + 4) + 128);
+      var r0 = 127 * Math.sin(0.3 * h) + 128;
+      var g0 = 127 * Math.sin(0.3 * h + 2) + 128;
+      var b0 = 127 * Math.sin(0.3 * h + 4) + 128;
+      var gray = (r0 + g0 + b0) / 3;
+      var sat = opts.saturation, brt = opts.brightness;
+      var r = Math.floor((gray + (r0 - gray) * sat) * brt);
+      var g = Math.floor((gray + (g0 - gray) * sat) * brt);
+      var b = Math.floor((gray + (b0 - gray) * sat) * brt);
       return "rgb(" + r + "," + g + "," + b + ")";
     }
 
@@ -672,9 +700,14 @@ const VERSION = "1.4.0";
       state.hue += state.hueFw ? 0.01 : -0.01;
       if (state.hue > opts.hue[1]) { state.hue = opts.hue[1]; state.hueFw = false; }
       else if (state.hue < opts.hue[0]) { state.hue = opts.hue[0]; state.hueFw = true; }
-      var r = Math.floor(127 * Math.sin(0.3 * state.hue) + 128);
-      var g = Math.floor(127 * Math.sin(0.3 * state.hue + 2) + 128);
-      var b = Math.floor(127 * Math.sin(0.3 * state.hue + 4) + 128);
+      var r0 = 127 * Math.sin(0.3 * state.hue) + 128;
+      var g0 = 127 * Math.sin(0.3 * state.hue + 2) + 128;
+      var b0 = 127 * Math.sin(0.3 * state.hue + 4) + 128;
+      var gray = (r0 + g0 + b0) / 3;
+      var sat = opts.saturation, brt = opts.brightness;
+      var r = Math.floor((gray + (r0 - gray) * sat) * brt);
+      var g = Math.floor((gray + (g0 - gray) * sat) * brt);
+      var b = Math.floor((gray + (b0 - gray) * sat) * brt);
       state.color = "rgba(" + r + "," + g + "," + b + ",0.1)";
     }
 
