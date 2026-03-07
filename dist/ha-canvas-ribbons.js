@@ -2,7 +2,7 @@
 // https://gitlab.iwanus.eu/jiwanus/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.7.0";
+const VERSION = "1.7.1";
 
 (function () {
   "use strict";
