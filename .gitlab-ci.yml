@@ -1,0 +1,117 @@
+# Canvas Ribbons Background — GitLab CI/CD
+#
+# Branch workflow:
+#   main     → lint + test (clean code gate)
+#   publish  → lint + test + security + build + wiki + github mirror
+#
+# Local command: make publish (orchestrates the full chain)
+
+stages:
+  - lint
+  - test
+  - security
+  - build
+  - wiki
+  - mirror
+
+# ===== STAGE: LINT (main + publish) =========================================
+lint:
+  stage: lint
+  script:
+    - echo "=== JavaScript syntax check ==="
+    - node --check dist/ha-canvas-ribbons.js
+    - node --check canvas-ribbons.test.js
+    - echo "=== Version consistency ==="
+    - >-
+      VERSION=$(grep 'const VERSION' dist/ha-canvas-ribbons.js | sed 's/.*"\(.*\)".*/\1/');
+      echo "JS version: $VERSION";
+      if [ -z "$VERSION" ]; then echo "ERROR: no version found"; exit 1; fi
+    - echo "Lint OK"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "publish"
+
+# ===== STAGE: TEST (main + publish) =========================================
+test:
+  stage: test
+  script:
+    - npm install --no-audit --no-fund 2>/dev/null
+    - node canvas-ribbons.test.js
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "publish"
+
+# ===== STAGE: SECURITY (publish only) =======================================
+security:
+  stage: security
+  script:
+    - echo "=== Security scan (ha-canvas-ribbons.js) ==="
+    - |
+      ISSUES=0
+      # H1: innerHTML with user input
+      if grep -n 'innerHTML\s*=' dist/ha-canvas-ribbons.js | grep -v 'textContent'; then
+        echo "WARN: innerHTML assignment found"; ISSUES=$((ISSUES+1))
+      fi
+      # H2: eval / Function constructor
+      if grep -nE '\beval\s*\(|new\s+Function\s*\(' dist/ha-canvas-ribbons.js; then
+        echo "FAIL: eval/Function found"; ISSUES=$((ISSUES+1))
+      fi
+      # H3: document.write
+      if grep -n 'document\.write' dist/ha-canvas-ribbons.js; then
+        echo "FAIL: document.write found"; ISSUES=$((ISSUES+1))
+      fi
+      # H4: external script injection
+      if grep -nE 'src\s*=.*http' dist/ha-canvas-ribbons.js; then
+        echo "WARN: external URL in src"; ISSUES=$((ISSUES+1))
+      fi
+      # H5: localStorage key injection
+      if grep -nE 'localStorage\.(get|set)Item\s*\([^"'"'"']' dist/ha-canvas-ribbons.js; then
+        echo "WARN: dynamic localStorage key"; ISSUES=$((ISSUES+1))
+      fi
+      echo "Security scan: $ISSUES issue(s)"
+      if [ "$ISSUES" -gt 0 ]; then echo "Review above warnings"; fi
+    - echo "=== npm audit ==="
+    - npm audit --omit=dev 2>/dev/null || echo "WARN: npm audit needs network or found issues"
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "publish"
+
+# ===== STAGE: BUILD (publish only) ==========================================
+build:
+  stage: build
+  script:
+    - VERSION=$(grep 'const VERSION' dist/ha-canvas-ribbons.js | sed 's/.*"\(.*\)".*/\1/')
+    - SIZE=$(wc -c < dist/ha-canvas-ribbons.js)
+    - echo "Version: ${VERSION}"
+    - echo "Size: ${SIZE} bytes ($(( SIZE / 1024 )) KB)"
+    - |
+      if [ "$SIZE" -gt 25000 ]; then
+        echo "WARN: file exceeds 25KB target"
+      fi
+    - echo "=== HACS manifest ==="
+    - cat hacs.json
+    - python3 -c "import json; d=json.load(open('hacs.json')); assert d.get('filename'), 'missing filename'; assert d.get('name'), 'missing name'; print('hacs.json OK')"
+    - echo "Build check OK"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "publish"
+
+# ===== STAGE: WIKI UPDATE (publish only) ====================================
+wiki-update:
+  stage: wiki
+  before_script:
+    - chmod 666 /var/run/docker.sock 2>/dev/null || true
+    - docker version --format '{{.Client.Version}}' || apk add --no-cache docker-cli
+  script:
+    - python3 scripts/update-wiki.py
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "publish"
+
+# ===== STAGE: GITHUB MIRROR (publish only) ==================================
+github-mirror:
+  stage: mirror
+  script:
+    - git remote set-url github https://jrx-code:${GITHUB_TOKEN}@github.com/jrx-code/ha-canvas-ribbons.git 2>/dev/null || git remote add github https://jrx-code:${GITHUB_TOKEN}@github.com/jrx-code/ha-canvas-ribbons.git
+    - git push github HEAD:main --force
+    - git push github --tags --force 2>/dev/null || true
+    - echo "GitHub mirror OK"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "publish"

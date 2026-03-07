@@ -1,8 +1,6 @@
 # Canvas Ribbons Background for Home Assistant
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![HACS: Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
-[![HA: 2024.1+](https://img.shields.io/badge/HA-2024.1%2B-blue.svg)](https://www.home-assistant.io/)
+**License:** MIT | **HACS:** Custom | **HA:** 2024.1+
 
 Animated canvas ribbon background for Home Assistant dashboards. Adds smooth, flowing ribbon animations behind your HA interface with full GUI configuration.
 
