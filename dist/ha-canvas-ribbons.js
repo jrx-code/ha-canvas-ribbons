@@ -2,7 +2,7 @@
 // https://github.com/jrx-code/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.6.0";
+const VERSION = "1.7.0";
 
 (function () {
   "use strict";
@@ -37,6 +37,7 @@ const VERSION = "1.6.0";
       presetCatSeasons: "Seasons",
       presetCatDaytime: "Time of day",
       presetCatThemes: "Themes",
+      saveClose: "Save & close",
     },
     pl: {
       title: "Canvas Ribbons",
@@ -62,6 +63,7 @@ const VERSION = "1.6.0";
       presetCatSeasons: "Pory roku",
       presetCatDaytime: "Pora dnia",
       presetCatThemes: "Motywy",
+      saveClose: "Zapisz i zamknij",
     },
     de: {
       title: "Canvas Ribbons",
@@ -87,6 +89,7 @@ const VERSION = "1.6.0";
       presetCatSeasons: "Jahreszeiten",
       presetCatDaytime: "Tageszeit",
       presetCatThemes: "Designs",
+      saveClose: "Speichern & schließen",
     },
     es: {
       title: "Canvas Ribbons",
@@ -112,6 +115,7 @@ const VERSION = "1.6.0";
       presetCatSeasons: "Estaciones",
       presetCatDaytime: "Hora del día",
       presetCatThemes: "Temas",
+      saveClose: "Guardar y cerrar",
     },
     cs: {
       title: "Canvas Ribbons",
@@ -137,6 +141,7 @@ const VERSION = "1.6.0";
       presetCatSeasons: "Roční období",
       presetCatDaytime: "Denní doba",
       presetCatThemes: "Motivy",
+      saveClose: "Uložit a zavřít",
     },
   };
 
@@ -723,6 +728,14 @@ const VERSION = "1.6.0";
       location.reload();
     };
     btnRow.appendChild(resetBtn);
+
+    var saveBtn = document.createElement("button");
+    saveBtn.textContent = T.saveClose;
+    saveBtn.style.cssText =
+      "flex:1;padding:6px 0;border:1px solid rgba(100,140,255,0.4);border-radius:6px;" +
+      "background:rgba(109,143,255,0.25);color:#9db8ff;cursor:pointer;font-size:11px;font-weight:600;";
+    saveBtn.onclick = function () { panel.style.display = "none"; };
+    btnRow.appendChild(saveBtn);
     panel.appendChild(btnRow);
 
     // Version + GitHub link
