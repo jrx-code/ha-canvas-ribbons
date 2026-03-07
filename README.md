@@ -1,43 +1,107 @@
 # Canvas Ribbons Background for Home Assistant
 
-Animated canvas ribbon background for Home Assistant dashboards.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![HACS: Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
+[![HA: 2024.1+](https://img.shields.io/badge/HA-2024.1%2B-blue.svg)](https://www.home-assistant.io/)
+
+Animated canvas ribbon background for Home Assistant dashboards. Adds smooth, flowing ribbon animations behind your HA interface with full GUI configuration.
 
 Based on [Boris Šehovac's CodePen](https://codepen.io/bsehovac/pen/LQVzxJ).
+
+![Preview](screenshots/preview.png)
+
+## Features
+
+- Animated ribbon background rendered on HTML5 Canvas
+- **GUI configuration panel** — click the button in the bottom-right corner
+- 11 configurable parameters (waves, speed, colors, transparency)
+- Settings persisted to `localStorage`
+- Automatic HA theme transparency (cards, header, sidebar)
+- Lightweight (~6 KB), no dependencies
+- HACS compatible
 
 ## Installation
 
 ### HACS (recommended)
 
-1. Open HACS → Frontend
-2. Add custom repository: `https://gitlab.iwanus.eu/jiwanus/ha-canvas-ribbons`
+1. Open HACS → Frontend → **Custom repositories**
+2. Add this repository URL, category: **Lovelace**
 3. Install **Canvas Ribbons Background**
-4. Add resource in Settings → Dashboards → Resources:
+4. Add resource in **Settings → Dashboards → Resources**:
    - URL: `/hacsfiles/ha-canvas-ribbons/ha-canvas-ribbons.js`
    - Type: JavaScript Module
-5. Refresh browser (Ctrl+Shift+R)
+5. Refresh browser (**Ctrl+Shift+R**)
 
 ### Manual
 
-1. Copy `dist/ha-canvas-ribbons.js` to `/config/www/`
-2. Add resource: `/local/ha-canvas-ribbons.js` (JavaScript Module)
-3. Refresh browser
+1. Copy `dist/ha-canvas-ribbons.js` to your HA `/config/www/` directory
+2. Add resource in **Settings → Dashboards → Resources**:
+   - URL: `/local/ha-canvas-ribbons.js`
+   - Type: JavaScript Module
+3. Refresh browser (**Ctrl+Shift+R**)
 
-## Configuration
+## GUI Configuration
 
-Optional — set `window.canvasRibbonsConfig` before the script loads:
+Click the floating button in the bottom-right corner to open the settings panel:
+
+| Parameter | Range | Live | Description |
+|---|---|---|---|
+| Waves | 1–8 | reload | Number of ribbon waves |
+| Trail width | 20–300 | yes | Length of ribbon trail |
+| Rotation | 0–360° | yes | Rotation angle |
+| Amplitude | 0.1–2.0 | yes | Wave amplitude |
+| Speed min/max | 0.001–0.04 | yes | Animation speed range |
+| Hue min/max | 0–30 | yes | Color hue range |
+| Card alpha | 0–1 | yes | Card background opacity |
+| Header alpha | 0–1 | yes | Header opacity |
+| Sidebar alpha | 0–1 | yes | Sidebar opacity |
+
+Settings are saved to `localStorage` and persist across page reloads. Click **Reset** to restore defaults.
+
+## Advanced Configuration
+
+You can also set config programmatically via `window.canvasRibbonsConfig`:
 
 ```html
 <script>
   window.canvasRibbonsConfig = {
-    waves: 3,          // number of ribbon waves (default: 3)
-    width: 120,        // ribbon trail length (default: 120)
-    rotation: 45,      // rotation angle in degrees (default: 45)
-    amplitude: 0.5,    // wave amplitude (default: 0.5)
-    speed: [0.004, 0.008], // min/max animation speed (default: [0.004, 0.008])
-    hue: [11, 14],     // hue oscillation range (default: [11, 14])
-    cardAlpha: 0.85,   // card background opacity (default: 0.85)
-    headerAlpha: 0.7,  // header opacity (default: 0.7)
-    sidebarAlpha: 0.8, // sidebar opacity (default: 0.8)
+    waves: 3,              // number of ribbon waves (default: 3)
+    width: 120,            // ribbon trail length (default: 120)
+    rotation: 45,          // rotation angle in degrees (default: 45)
+    amplitude: 0.5,        // wave amplitude (default: 0.5)
+    speed: [0.004, 0.008], // min/max animation speed
+    hue: [11, 14],         // hue oscillation range
+    cardAlpha: 0.85,       // card background opacity (default: 0.85)
+    headerAlpha: 0.7,      // header opacity (default: 0.7)
+    sidebarAlpha: 0.8,     // sidebar opacity (default: 0.8)
   };
 </script>
 ```
+
+Config priority: defaults → localStorage → `window.canvasRibbonsConfig`
+
+## How it works
+
+1. Injects a `<canvas>` element on `document.body` with `z-index: 0` and `pointer-events: none`
+2. Adds CSS custom properties to make HA backgrounds transparent
+3. Renders animated Bézier curves (ribbons) via `requestAnimationFrame`
+4. No iframes, no shadow DOM hacks — clean DOM injection
+
+## Development
+
+```bash
+# Install dependencies (for tests)
+npm install
+
+# Run tests (20 unit tests, jsdom)
+node canvas-ribbons.test.js
+
+# Generate screenshot
+node scripts/generate-screenshot.js
+```
+
+## License
+
+[MIT](LICENSE) — Copyright (c) 2026 JI ENGINEERING
+
+Animation based on work by [Boris Šehovac](https://codepen.io/bsehovac/pen/LQVzxJ).
