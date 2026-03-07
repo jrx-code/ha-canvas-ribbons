@@ -69,11 +69,43 @@ const VERSION = "1.1.0";
     sidebarAlpha: 0.8,
   };
 
+  // Clamp value to valid range
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  // Validate and sanitize a config value
+  function sanitizeConfig(parsed) {
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
+    var clean = {};
+    if (typeof parsed.waves === "number" && isFinite(parsed.waves))
+      clean.waves = clamp(Math.round(parsed.waves), 1, 8);
+    if (typeof parsed.width === "number" && isFinite(parsed.width))
+      clean.width = clamp(Math.round(parsed.width), 20, 300);
+    if (typeof parsed.rotation === "number" && isFinite(parsed.rotation))
+      clean.rotation = clamp(parsed.rotation, 0, 360);
+    if (typeof parsed.amplitude === "number" && isFinite(parsed.amplitude))
+      clean.amplitude = clamp(parsed.amplitude, 0.1, 2.0);
+    if (typeof parsed.cardAlpha === "number" && isFinite(parsed.cardAlpha))
+      clean.cardAlpha = clamp(parsed.cardAlpha, 0, 1);
+    if (typeof parsed.headerAlpha === "number" && isFinite(parsed.headerAlpha))
+      clean.headerAlpha = clamp(parsed.headerAlpha, 0, 1);
+    if (typeof parsed.sidebarAlpha === "number" && isFinite(parsed.sidebarAlpha))
+      clean.sidebarAlpha = clamp(parsed.sidebarAlpha, 0, 1);
+    if (Array.isArray(parsed.speed) && parsed.speed.length === 2 &&
+        typeof parsed.speed[0] === "number" && typeof parsed.speed[1] === "number" &&
+        isFinite(parsed.speed[0]) && isFinite(parsed.speed[1]))
+      clean.speed = [clamp(parsed.speed[0], 0.001, 0.02), clamp(parsed.speed[1], 0.002, 0.04)];
+    if (Array.isArray(parsed.hue) && parsed.hue.length === 2 &&
+        typeof parsed.hue[0] === "number" && typeof parsed.hue[1] === "number" &&
+        isFinite(parsed.hue[0]) && isFinite(parsed.hue[1]))
+      clean.hue = [clamp(parsed.hue[0], 0, 30), clamp(parsed.hue[1], 0, 30)];
+    return clean;
+  }
+
   // Load saved config from localStorage
   function loadConfig() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : {};
+      return raw ? sanitizeConfig(JSON.parse(raw)) : {};
     } catch (e) { return {}; }
   }
 
@@ -272,9 +304,9 @@ const VERSION = "1.1.0";
       return;
     }
 
-    // Merge: defaults < localStorage < window config
+    // Merge: defaults < localStorage < window config (all validated)
     var saved = loadConfig();
-    var windowCfg = window.canvasRibbonsConfig || {};
+    var windowCfg = sanitizeConfig(window.canvasRibbonsConfig || {});
     var opts = Object.assign({}, DEFAULTS, saved, windowCfg);
 
     // Ensure arrays are proper
