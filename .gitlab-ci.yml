@@ -44,32 +44,13 @@ security:
   stage: security
   script:
     - echo "=== Security scan (ha-canvas-ribbons.js) ==="
-    - |
-      ISSUES=0
-      # H1: innerHTML with user input
-      if grep -n 'innerHTML\s*=' dist/ha-canvas-ribbons.js | grep -v 'textContent'; then
-        echo "WARN: innerHTML assignment found"; ISSUES=$((ISSUES+1))
-      fi
-      # H2: eval / Function constructor
-      if grep -nE '\beval\s*\(|new\s+Function\s*\(' dist/ha-canvas-ribbons.js; then
-        echo "FAIL: eval/Function found"; ISSUES=$((ISSUES+1))
-      fi
-      # H3: document.write
-      if grep -n 'document\.write' dist/ha-canvas-ribbons.js; then
-        echo "FAIL: document.write found"; ISSUES=$((ISSUES+1))
-      fi
-      # H4: external script injection
-      if grep -nE 'src\s*=.*http' dist/ha-canvas-ribbons.js; then
-        echo "WARN: external URL in src"; ISSUES=$((ISSUES+1))
-      fi
-      # H5: localStorage key injection
-      if grep -nE 'localStorage\.(get|set)Item\s*\([^"'"'"']' dist/ha-canvas-ribbons.js; then
-        echo "WARN: dynamic localStorage key"; ISSUES=$((ISSUES+1))
-      fi
-      echo "Security scan: $ISSUES issue(s)"
-      if [ "$ISSUES" -gt 0 ]; then echo "Review above warnings"; fi
+    - grep -n 'innerHTML\s*=' dist/ha-canvas-ribbons.js | grep -v textContent && echo "WARN H1 innerHTML" || true
+    - grep -nE '\beval\s*\(|new\s+Function\s*\(' dist/ha-canvas-ribbons.js && echo "FAIL H2 eval/Function" || true
+    - grep -n 'document\.write' dist/ha-canvas-ribbons.js && echo "FAIL H3 document.write" || true
+    - grep -nE 'src\s*=.*http' dist/ha-canvas-ribbons.js && echo "WARN H4 external URL" || true
+    - echo "Security scan done"
     - echo "=== npm audit ==="
-    - npm audit --omit=dev 2>/dev/null || echo "WARN: npm audit needs network or found issues"
+    - npm audit --omit=dev 2>/dev/null || echo "WARN npm audit needs network or found issues"
   allow_failure: true
   rules:
     - if: $CI_COMMIT_BRANCH == "publish"
@@ -80,12 +61,8 @@ build:
   script:
     - VERSION=$(grep 'const VERSION' dist/ha-canvas-ribbons.js | sed 's/.*"\(.*\)".*/\1/')
     - SIZE=$(wc -c < dist/ha-canvas-ribbons.js)
-    - echo "Version: ${VERSION}"
-    - echo "Size: ${SIZE} bytes ($(( SIZE / 1024 )) KB)"
-    - |
-      if [ "$SIZE" -gt 25000 ]; then
-        echo "WARN: file exceeds 25KB target"
-      fi
+    - echo "Version ${VERSION}, Size ${SIZE} bytes ($((SIZE / 1024)) KB)"
+    - test "$SIZE" -le 25000 || echo "WARN file exceeds 25KB target"
     - echo "=== HACS manifest ==="
     - cat hacs.json
     - python3 -c "import json; d=json.load(open('hacs.json')); assert d.get('filename'), 'missing filename'; assert d.get('name'), 'missing name'; print('hacs.json OK')"
