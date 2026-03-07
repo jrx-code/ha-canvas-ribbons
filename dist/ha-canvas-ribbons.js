@@ -1,5 +1,5 @@
 // Canvas Ribbons — animated background for Home Assistant
-// https://git.example.com/jrx-code/ha-canvas-ribbons
+// https://github.com/jrx-code/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
 const VERSION = "1.1.0";
