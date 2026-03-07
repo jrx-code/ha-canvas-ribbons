@@ -343,7 +343,11 @@ const VERSION = "1.1.0";
       for (var j = 0; j < opts.width; j++) waves[i].update();
     }
 
+    var rafId = null;
+    var running = true;
+
     function render() {
+      if (!running) return;
       updateColor();
       ctx.clearRect(0, 0, state.w, state.h);
 
@@ -358,8 +362,37 @@ const VERSION = "1.1.0";
 
       ctx.lineWidth = 1;
       for (var k = 0; k < waves.length; k++) { waves[k].update(); waves[k].draw(ctx); }
-      requestAnimationFrame(render);
+      rafId = requestAnimationFrame(render);
     }
+
+    // Pause animation when tab is hidden to save resources
+    function onVisibilityChange() {
+      if (document.hidden) {
+        running = false;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      } else {
+        running = true;
+        render();
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    // Cleanup function for proper resource release
+    window._haCanvasRibbonsDestroy = function () {
+      running = false;
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      var el = document.getElementById("ha-canvas-ribbons");
+      if (el) el.remove();
+      var st = document.getElementById("ha-canvas-ribbons-style");
+      if (st) st.remove();
+      var gui = document.getElementById("ha-canvas-ribbons-gui");
+      if (gui) gui.remove();
+      var tog = document.getElementById("ha-canvas-ribbons-toggle");
+      if (tog) tog.remove();
+      delete window._haCanvasRibbonsDestroy;
+    };
 
     render();
 
