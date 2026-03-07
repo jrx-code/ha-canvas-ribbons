@@ -408,7 +408,7 @@ const VERSION = "1.7.0";
     presetLbl.style.cssText = "min-width:90px;color:#aaa;font-size:11px;";
     var presetSelect = document.createElement("select");
     presetSelect.style.cssText = "flex:1;background:rgba(255,255,255,0.08);color:#ccc;border:1px solid rgba(255,255,255,0.15);" +
-      "border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer;outline:none;";
+      "border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer;outline:none;color-scheme:dark;";
 
     var customOpt = document.createElement("option");
     customOpt.value = "";
@@ -433,7 +433,10 @@ const VERSION = "1.7.0";
       }
     });
 
+    var applyingPreset = false;
+
     function applyPreset(p) {
+      applyingPreset = true;
       opts.waves = p.waves; opts.width = p.width; opts.rotation = p.rotation;
       opts.amplitude = p.amplitude; opts.speed = [p.speed[0], p.speed[1]];
       opts.hue = [p.hue[0], p.hue[1]]; opts.saturation = p.saturation;
@@ -486,6 +489,7 @@ const VERSION = "1.7.0";
         hint.textContent = T.refreshHint;
         panel.appendChild(hint);
       }
+      applyingPreset = false;
     }
 
     presetSelect.onchange = function () {
@@ -546,7 +550,7 @@ const VERSION = "1.7.0";
         var v = parseFloat(this.value);
         var decimals = s.step < 1 ? String(s.step).split(".")[1].length : 0;
         valSpan.textContent = v.toFixed(decimals);
-        presetSelect.value = "";
+        if (!applyingPreset) presetSelect.value = "";
 
         if (s.key === "speedMin") { opts.speed[0] = v; }
         else if (s.key === "speedMax") { opts.speed[1] = v; }
@@ -673,7 +677,7 @@ const VERSION = "1.7.0";
     huePosInput.oninput = function () {
       huePos = parseFloat(this.value);
       huePosVal.textContent = huePos.toFixed(1);
-      presetSelect.value = "";
+      if (!applyingPreset) presetSelect.value = "";
       onHueChange();
     };
     huePosRow.appendChild(huePosLbl);
@@ -700,7 +704,7 @@ const VERSION = "1.7.0";
     hueRngInput.oninput = function () {
       hueWidth = parseFloat(this.value);
       hueRngVal.textContent = hueWidth.toFixed(1);
-      presetSelect.value = "";
+      if (!applyingPreset) presetSelect.value = "";
       onHueChange();
     };
     hueRngRow.appendChild(hueRngLbl);
