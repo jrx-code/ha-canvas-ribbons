@@ -2,7 +2,7 @@
 // https://gitlab.iwanus.eu/jiwanus/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.7.1";
+const VERSION = "1.8.0";
 
 (function () {
   "use strict";
@@ -38,6 +38,9 @@ const VERSION = "1.7.1";
       presetCatDaytime: "Time of day",
       presetCatThemes: "Themes",
       saveClose: "Save & close",
+      autoSun: "Auto (sun)",
+      sunEntity: "Sun entity",
+      sunPhase: "Phase",
     },
     pl: {
       title: "Canvas Ribbons",
@@ -64,6 +67,9 @@ const VERSION = "1.7.1";
       presetCatDaytime: "Pora dnia",
       presetCatThemes: "Motywy",
       saveClose: "Zapisz i zamknij",
+      autoSun: "Auto (słońce)",
+      sunEntity: "Encja słońca",
+      sunPhase: "Faza",
     },
     de: {
       title: "Canvas Ribbons",
@@ -90,6 +96,9 @@ const VERSION = "1.7.1";
       presetCatDaytime: "Tageszeit",
       presetCatThemes: "Designs",
       saveClose: "Speichern & schließen",
+      autoSun: "Auto (Sonne)",
+      sunEntity: "Sonnen-Entität",
+      sunPhase: "Phase",
     },
     es: {
       title: "Canvas Ribbons",
@@ -116,6 +125,9 @@ const VERSION = "1.7.1";
       presetCatDaytime: "Hora del día",
       presetCatThemes: "Temas",
       saveClose: "Guardar y cerrar",
+      autoSun: "Auto (sol)",
+      sunEntity: "Entidad sol",
+      sunPhase: "Fase",
     },
     cs: {
       title: "Canvas Ribbons",
@@ -142,6 +154,9 @@ const VERSION = "1.7.1";
       presetCatDaytime: "Denní doba",
       presetCatThemes: "Motivy",
       saveClose: "Uložit a zavřít",
+      autoSun: "Auto (slunce)",
+      sunEntity: "Entita slunce",
+      sunPhase: "Fáze",
     },
   };
 
@@ -319,6 +334,43 @@ const VERSION = "1.7.1";
     savePanelStates(states);
   }
 
+  // --- Auto-sun ---
+  var SUN_KEY = "ha-canvas-ribbons-sun";
+
+  function loadSunConfig() {
+    try {
+      var raw = localStorage.getItem(SUN_KEY);
+      var parsed = raw ? JSON.parse(raw) : {};
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return { enabled: false, entity: "sun.sun" };
+      return {
+        enabled: parsed.enabled === true,
+        entity: typeof parsed.entity === "string" && parsed.entity.length > 0 ? parsed.entity : "sun.sun",
+      };
+    } catch (e) { return { enabled: false, entity: "sun.sun" }; }
+  }
+
+  function saveSunConfig(cfg) {
+    localStorage.setItem(SUN_KEY, JSON.stringify(cfg));
+  }
+
+  // Map sun elevation + rising to a daytime preset id
+  function sunToPresetId(elevation, rising) {
+    if (elevation < -6) return "night";
+    if (elevation < 0) return rising ? "dawn" : "sunset";
+    if (elevation < 15) return rising ? "dawn" : "sunset";
+    return "noon";
+  }
+
+  function getHassState(entityId) {
+    try {
+      var ha = document.querySelector("home-assistant");
+      if (ha && ha.hass && ha.hass.states && ha.hass.states[entityId]) {
+        return ha.hass.states[entityId];
+      }
+    } catch (e) {}
+    return null;
+  }
+
   // --- GUI ---
   function buildGUI(opts, state, reinit) {
     var panel = document.getElementById("ha-canvas-ribbons-gui");
@@ -399,6 +451,92 @@ const VERSION = "1.7.1";
     toggleRow.appendChild(toggleLabel);
     panel.appendChild(toggleRow);
     panel.appendChild(panelPathLabel);
+
+    // --- Auto-sun toggle ---
+    var sunCfg = loadSunConfig();
+    var sunRow = document.createElement("div");
+    sunRow.style.cssText = "display:flex;align-items:center;gap:8px;padding:4px 0;";
+
+    var sunLabel = document.createElement("label");
+    sunLabel.style.cssText = "flex:1;color:#aaa;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px;";
+
+    var sunCb = document.createElement("input");
+    sunCb.type = "checkbox";
+    sunCb.checked = sunCfg.enabled;
+    sunCb.style.cssText = "accent-color:#f0a030;cursor:pointer;width:14px;height:14px;";
+
+    var sunText = document.createElement("span");
+    sunText.textContent = T.autoSun;
+
+    sunLabel.appendChild(sunCb);
+    sunLabel.appendChild(sunText);
+    sunRow.appendChild(sunLabel);
+    panel.appendChild(sunRow);
+
+    // Sun entity input
+    var sunEntityRow = document.createElement("div");
+    sunEntityRow.style.cssText = "display:flex;align-items:center;gap:8px;padding:0 0 4px 0;";
+    var sunEntityLbl = document.createElement("label");
+    sunEntityLbl.textContent = T.sunEntity;
+    sunEntityLbl.style.cssText = "min-width:90px;color:#aaa;font-size:11px;";
+    var sunEntityInput = document.createElement("input");
+    sunEntityInput.type = "text";
+    sunEntityInput.value = sunCfg.entity;
+    sunEntityInput.style.cssText = "flex:1;background:rgba(255,255,255,0.08);color:#ccc;border:1px solid rgba(255,255,255,0.15);" +
+      "border-radius:4px;padding:3px 6px;font-size:11px;font-family:monospace;outline:none;";
+    sunEntityInput.onchange = function () {
+      sunCfg.entity = this.value.trim() || "sun.sun";
+      saveSunConfig(sunCfg);
+    };
+    sunEntityRow.appendChild(sunEntityLbl);
+    sunEntityRow.appendChild(sunEntityInput);
+    panel.appendChild(sunEntityRow);
+
+    // Sun phase display
+    var sunPhaseRow = document.createElement("div");
+    sunPhaseRow.style.cssText = "display:flex;align-items:center;gap:8px;padding:0 0 6px 0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;";
+    var sunPhaseLbl = document.createElement("label");
+    sunPhaseLbl.textContent = T.sunPhase;
+    sunPhaseLbl.style.cssText = "min-width:90px;color:#aaa;font-size:11px;";
+    var sunPhaseVal = document.createElement("span");
+    sunPhaseVal.style.cssText = "font-size:11px;color:#f0a030;";
+    sunPhaseVal.textContent = "—";
+
+    function updateSunPhaseDisplay() {
+      var s = getHassState(sunCfg.entity);
+      if (s && s.attributes) {
+        var elev = s.attributes.elevation;
+        var rising = s.attributes.rising;
+        var pid = sunToPresetId(elev, rising);
+        var p = PRESETS.find(function (x) { return x.id === pid; });
+        sunPhaseVal.textContent = (p ? p.name : pid) + " (" + (typeof elev === "number" ? elev.toFixed(1) + "\u00B0" : "?") + ")";
+      } else {
+        sunPhaseVal.textContent = "—";
+      }
+    }
+    updateSunPhaseDisplay();
+
+    sunPhaseRow.appendChild(sunPhaseLbl);
+    sunPhaseRow.appendChild(sunPhaseVal);
+    panel.appendChild(sunPhaseRow);
+
+    sunCb.onchange = function () {
+      sunCfg.enabled = this.checked;
+      saveSunConfig(sunCfg);
+      if (this.checked) {
+        updateSunPhaseDisplay();
+        // Trigger immediate sun-based preset change
+        var s = getHassState(sunCfg.entity);
+        if (s && s.attributes) {
+          var pid = sunToPresetId(s.attributes.elevation, s.attributes.rising);
+          var p = PRESETS.find(function (x) { return x.id === pid; });
+          if (p) {
+            presetSelect.value = pid;
+            applyPreset(p);
+          }
+        }
+      }
+    };
 
     // --- Preset selector ---
     var presetRow = document.createElement("div");
@@ -550,7 +688,11 @@ const VERSION = "1.7.1";
         var v = parseFloat(this.value);
         var decimals = s.step < 1 ? String(s.step).split(".")[1].length : 0;
         valSpan.textContent = v.toFixed(decimals);
-        if (!applyingPreset) presetSelect.value = "";
+        if (!applyingPreset) {
+          presetSelect.value = "";
+          // Disable auto-sun on manual change
+          if (sunCb.checked) { sunCb.checked = false; sunCfg.enabled = false; saveSunConfig(sunCfg); }
+        }
 
         if (s.key === "speedMin") { opts.speed[0] = v; }
         else if (s.key === "speedMax") { opts.speed[1] = v; }
@@ -967,6 +1109,7 @@ const VERSION = "1.7.1";
     window._haCanvasRibbonsDestroy = function () {
       running = false;
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      if (sunIntervalId) { clearInterval(sunIntervalId); sunIntervalId = null; }
       window.removeEventListener("resize", resize);
       window.removeEventListener("location-changed", onNavigate);
       window.removeEventListener("popstate", onNavigate);
@@ -986,6 +1129,37 @@ const VERSION = "1.7.1";
 
     // GUI toggle button
     createToggleButton(opts, state);
+
+    // --- Auto-sun polling ---
+    var sunIntervalId = null;
+    var lastSunPreset = null;
+
+    function checkSun() {
+      var cfg = loadSunConfig();
+      if (!cfg.enabled) return;
+      var s = getHassState(cfg.entity);
+      if (!s || !s.attributes) return;
+      var pid = sunToPresetId(s.attributes.elevation, s.attributes.rising);
+      if (pid === lastSunPreset) return;
+      lastSunPreset = pid;
+      var p = PRESETS.find(function (x) { return x.id === pid; });
+      if (!p) return;
+      // Apply preset params directly (GUI may not be open)
+      opts.waves = p.waves; opts.width = p.width; opts.rotation = p.rotation;
+      opts.amplitude = p.amplitude; opts.speed = [p.speed[0], p.speed[1]];
+      opts.hue = [p.hue[0], p.hue[1]]; opts.saturation = p.saturation;
+      opts.brightness = p.brightness;
+      saveConfig({
+        waves: opts.waves, width: opts.width, rotation: opts.rotation,
+        amplitude: opts.amplitude, speed: [opts.speed[0], opts.speed[1]],
+        hue: [opts.hue[0], opts.hue[1]], saturation: opts.saturation,
+        brightness: opts.brightness, cardAlpha: opts.cardAlpha,
+        headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
+      });
+      console.info("[ha-canvas-ribbons] Sun auto-preset: " + p.name + " (elev=" + s.attributes.elevation + ")");
+    }
+    checkSun();
+    sunIntervalId = setInterval(checkSun, 60000);
 
     console.info("[ha-canvas-ribbons] v" + VERSION + " loaded — " + opts.waves + " waves, width " + opts.width);
   }
