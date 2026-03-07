@@ -14,6 +14,7 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 
 - Animated ribbon background rendered on HTML5 Canvas
 - **GUI configuration panel** — click the button in the bottom-right corner
+- **16 presets** (Pip-Boy, Neon City, seasons, iOS Dark, Material You…)
 - 13 configurable parameters (waves, speed, colors, saturation, brightness, transparency)
 - Settings persisted to `localStorage`
 - Automatic HA theme transparency (cards, header, sidebar)
