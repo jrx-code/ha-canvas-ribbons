@@ -6,7 +6,7 @@
 
 Animated canvas ribbon background for Home Assistant dashboards. Adds smooth, flowing ribbon animations behind your HA interface with full GUI configuration.
 
-Based on [Boris Šehovac's CodePen](https://codepen.io/bsehovac/pen/LQVzxJ).
+Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://github.com/ibz0q/lovelace-bg-animation) by [@ibz0q](https://github.com/ibz0q), which itself is based on [Boris Šehovac's CodePen](https://codepen.io/bsehovac/pen/LQVzxJ). Rewritten as a standalone, lightweight HACS plugin with live GUI configuration.
 
 ![Preview](screenshots/preview.png)
 
@@ -104,4 +104,5 @@ node scripts/generate-screenshot.js
 
 [MIT](LICENSE) — Copyright (c) 2026 JI ENGINEERING
 
-Animation based on work by [Boris Šehovac](https://codepen.io/bsehovac/pen/LQVzxJ).
+Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://github.com/ibz0q/lovelace-bg-animation) by [@ibz0q](https://github.com/ibz0q).
+Original animation by [Boris Šehovac](https://codepen.io/bsehovac/pen/LQVzxJ).
