@@ -236,7 +236,23 @@ const VERSION = "1.1.0";
   function createToggleButton(opts, state) {
     var btn = document.createElement("button");
     btn.id = "ha-canvas-ribbons-toggle";
-    btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12c0 0 4-8 8-8s8 8 8 8-4 8-8 8-8-8-8-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    var svgNS = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", "20");
+    svg.setAttribute("height", "20");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    var path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", "M4 12c0 0 4-8 8-8s8 8 8 8-4 8-8 8-8-8-8-8z");
+    var circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("cx", "12");
+    circle.setAttribute("cy", "12");
+    circle.setAttribute("r", "3");
+    svg.appendChild(path);
+    svg.appendChild(circle);
+    btn.appendChild(svg);
     btn.style.cssText =
       "position:fixed;bottom:16px;right:16px;z-index:999;width:40px;height:40px;" +
       "border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(20,20,24,0.8);" +
