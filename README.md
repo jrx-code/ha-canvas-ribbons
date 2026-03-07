@@ -46,6 +46,7 @@ Click the floating button in the bottom-right corner to open the settings panel:
 
 | Parameter | Range | Live | Description |
 |---|---|---|---|
+| Enable on panel | on/off | yes | Enable/disable ribbons per HA panel (stored per URL path) |
 | Waves | 1–8 | reload | Number of ribbon waves |
 | Trail width | 20–300 | yes | Length of ribbon trail |
 | Rotation | 0–360° | yes | Rotation angle |

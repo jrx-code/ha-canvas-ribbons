@@ -2,12 +2,13 @@
 // https://gitlab.iwanus.eu/jiwanus/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 
 (function () {
   "use strict";
 
   const STORAGE_KEY = "ha-canvas-ribbons-config";
+  const PANELS_KEY = "ha-canvas-ribbons-panels";
   const TAU = 2 * Math.PI;
   function rnd(a, b) { return b === undefined ? Math.random() * a : a + Math.random() * (b - a); }
   function rndSign() { return Math.random() > 0.5 ? 1 : -1; }
@@ -113,6 +114,40 @@ const VERSION = "1.1.0";
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
   }
 
+  // --- Per-panel enable/disable ---
+  function getCurrentPanel() {
+    return location.pathname;
+  }
+
+  function loadPanelStates() {
+    try {
+      var raw = localStorage.getItem(PANELS_KEY);
+      var parsed = raw ? JSON.parse(raw) : {};
+      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return {};
+      return parsed;
+    } catch (e) { return {}; }
+  }
+
+  function savePanelStates(states) {
+    localStorage.setItem(PANELS_KEY, JSON.stringify(states));
+  }
+
+  function isPanelEnabled(path) {
+    var states = loadPanelStates();
+    // Default: enabled (true). Only disabled if explicitly set to false.
+    return states[path] !== false;
+  }
+
+  function setPanelEnabled(path, enabled) {
+    var states = loadPanelStates();
+    if (enabled) {
+      delete states[path]; // Remove entry = default (enabled)
+    } else {
+      states[path] = false;
+    }
+    savePanelStates(states);
+  }
+
   // --- GUI ---
   function buildGUI(opts, state, reinit) {
     var panel = document.getElementById("ha-canvas-ribbons-gui");
@@ -154,6 +189,45 @@ const VERSION = "1.1.0";
     titleBar.appendChild(title);
     titleBar.appendChild(closeBtn);
     panel.appendChild(titleBar);
+
+    // Per-panel toggle
+    var panelPath = getCurrentPanel();
+    var toggleRow = document.createElement("div");
+    toggleRow.style.cssText = "display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;";
+
+    var toggleLabel = document.createElement("label");
+    toggleLabel.style.cssText = "flex:1;color:#aaa;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px;";
+
+    var toggleCb = document.createElement("input");
+    toggleCb.type = "checkbox";
+    toggleCb.checked = isPanelEnabled(panelPath);
+    toggleCb.style.cssText = "accent-color:#6d8fff;cursor:pointer;width:14px;height:14px;";
+
+    var toggleText = document.createElement("span");
+    toggleText.textContent = "Wlaczone na tym panelu";
+
+    var panelPathLabel = document.createElement("div");
+    panelPathLabel.textContent = panelPath;
+    panelPathLabel.style.cssText = "color:#666;font-size:9px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;";
+
+    toggleCb.onchange = function () {
+      setPanelEnabled(panelPath, this.checked);
+      var container = document.getElementById("ha-canvas-ribbons");
+      var ribbonStyle = document.getElementById("ha-canvas-ribbons-style");
+      if (this.checked) {
+        if (container) container.style.display = "";
+        if (ribbonStyle) ribbonStyle.disabled = false;
+      } else {
+        if (container) container.style.display = "none";
+        if (ribbonStyle) ribbonStyle.disabled = true;
+      }
+    };
+
+    toggleLabel.appendChild(toggleCb);
+    toggleLabel.appendChild(toggleText);
+    toggleRow.appendChild(toggleLabel);
+    panel.appendChild(toggleRow);
+    panel.appendChild(panelPathLabel);
 
     var valueDisplays = {};
 
@@ -429,18 +503,55 @@ const VERSION = "1.1.0";
       if (document.hidden) {
         running = false;
         if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-      } else {
+      } else if (isPanelEnabled(getCurrentPanel())) {
         running = true;
         render();
       }
     }
     document.addEventListener("visibilitychange", onVisibilityChange);
 
+    // Check per-panel state on init
+    var currentEnabled = isPanelEnabled(getCurrentPanel());
+    if (!currentEnabled) {
+      container.style.display = "none";
+      style.disabled = true;
+      running = false;
+    }
+
+    if (running) render();
+
+    // Listen for HA SPA navigation to show/hide per-panel
+    function onNavigate() {
+      var enabled = isPanelEnabled(getCurrentPanel());
+      if (enabled && !running) {
+        container.style.display = "";
+        style.disabled = false;
+        running = true;
+        render();
+      } else if (!enabled && running) {
+        running = false;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        container.style.display = "none";
+        style.disabled = true;
+      }
+      // Update GUI toggle if open
+      var gui = document.getElementById("ha-canvas-ribbons-gui");
+      if (gui) {
+        var cb = gui.querySelector("input[type=checkbox]");
+        if (cb) cb.checked = enabled;
+      }
+    }
+    // HA fires 'location-changed' on window for SPA navigation
+    window.addEventListener("location-changed", onNavigate);
+    window.addEventListener("popstate", onNavigate);
+
     // Cleanup function for proper resource release
     window._haCanvasRibbonsDestroy = function () {
       running = false;
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       window.removeEventListener("resize", resize);
+      window.removeEventListener("location-changed", onNavigate);
+      window.removeEventListener("popstate", onNavigate);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       var el = document.getElementById("ha-canvas-ribbons");
       if (el) el.remove();
@@ -452,8 +563,6 @@ const VERSION = "1.1.0";
       if (tog) tog.remove();
       delete window._haCanvasRibbonsDestroy;
     };
-
-    render();
 
     // GUI toggle button
     createToggleButton(opts, state);
