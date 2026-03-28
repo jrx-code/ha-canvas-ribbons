@@ -2,7 +2,7 @@
 // https://git.example.com/jrx-code/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.8.0";
+const VERSION = "1.9.0";
 
 (function () {
   "use strict";
@@ -128,6 +128,35 @@ const VERSION = "1.8.0";
       autoSun: "Auto (sol)",
       sunEntity: "Entidad sol",
       sunPhase: "Fase",
+    },
+    ca: {
+      title: "Canvas Ribbons",
+      enablePanel: "Activat en aquest panell",
+      refreshHint: "Actualitzar pàgina (F5) per aplicar",
+      reset: "Restablir",
+      waves: "Ones",
+      trailWidth: "Longitut estel·la",
+      rotation: "Rotació",
+      amplitude: "Amplitut",
+      speedMin: "Veloc. mín",
+      speedMax: "Veloc. máx",
+      huePosition: "To",
+      hueRange: "Rang del to",
+      saturation: "Saturació",
+      brightness: "Brillantor",
+      cardAlpha: "Targetes alfa",
+      headerAlpha: "Capçalera alfa",
+      sidebarAlpha: "Barra lateral alfa",
+      preset: "Preajust",
+      presetCustom: "Personal.",
+      presetCatGames: "Jocs",
+      presetCatSeasons: "Estacions",
+      presetCatDaytime: "Hora del dia",
+      presetCatThemes: "Temes",
+      saveClose: "Guardar i tancar",
+      autoSun: "Auto (sol)",
+      sunEntity: "Entitat sol",
+      sunPhase: "Fase solar",
     },
     cs: {
       title: "Canvas Ribbons",
