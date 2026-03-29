@@ -2,13 +2,14 @@
 // https://git.example.com/jrx-code/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.9.0";
+const VERSION = "1.10.0";
 
 (function () {
   "use strict";
 
   const STORAGE_KEY = "ha-canvas-ribbons-config";
   const PANELS_KEY = "ha-canvas-ribbons-panels";
+  const BUTTON_KEY = "ha-canvas-ribbons-button";
   const TAU = 2 * Math.PI;
 
   // --- i18n ---
@@ -41,6 +42,12 @@ const VERSION = "1.9.0";
       autoSun: "Auto (sun)",
       sunEntity: "Sun entity",
       sunPhase: "Phase",
+      buttonPos: "Button",
+      btnBottomRight: "Bottom-right",
+      btnBottomLeft: "Bottom-left",
+      btnTopRight: "Top-right",
+      btnTopLeft: "Top-left",
+      btnHidden: "Hidden",
     },
     pl: {
       title: "Canvas Ribbons",
@@ -70,6 +77,12 @@ const VERSION = "1.9.0";
       autoSun: "Auto (słońce)",
       sunEntity: "Encja słońca",
       sunPhase: "Faza",
+      buttonPos: "Przycisk",
+      btnBottomRight: "Prawy dół",
+      btnBottomLeft: "Lewy dół",
+      btnTopRight: "Prawy góra",
+      btnTopLeft: "Lewy góra",
+      btnHidden: "Ukryty",
     },
     de: {
       title: "Canvas Ribbons",
@@ -99,6 +112,12 @@ const VERSION = "1.9.0";
       autoSun: "Auto (Sonne)",
       sunEntity: "Sonnen-Entität",
       sunPhase: "Phase",
+      buttonPos: "Schaltfläche",
+      btnBottomRight: "Unten rechts",
+      btnBottomLeft: "Unten links",
+      btnTopRight: "Oben rechts",
+      btnTopLeft: "Oben links",
+      btnHidden: "Versteckt",
     },
     es: {
       title: "Canvas Ribbons",
@@ -128,6 +147,12 @@ const VERSION = "1.9.0";
       autoSun: "Auto (sol)",
       sunEntity: "Entidad sol",
       sunPhase: "Fase",
+      buttonPos: "Botón",
+      btnBottomRight: "Abajo dcha.",
+      btnBottomLeft: "Abajo izda.",
+      btnTopRight: "Arriba dcha.",
+      btnTopLeft: "Arriba izda.",
+      btnHidden: "Oculto",
     },
     ca: {
       title: "Canvas Ribbons",
@@ -157,6 +182,12 @@ const VERSION = "1.9.0";
       autoSun: "Auto (sol)",
       sunEntity: "Entitat sol",
       sunPhase: "Fase solar",
+      buttonPos: "Botó",
+      btnBottomRight: "Baix dreta",
+      btnBottomLeft: "Baix esq.",
+      btnTopRight: "Dalt dreta",
+      btnTopLeft: "Dalt esq.",
+      btnHidden: "Ocult",
     },
     cs: {
       title: "Canvas Ribbons",
@@ -186,6 +217,12 @@ const VERSION = "1.9.0";
       autoSun: "Auto (slunce)",
       sunEntity: "Entita slunce",
       sunPhase: "Fáze",
+      buttonPos: "Tlačítko",
+      btnBottomRight: "Vpravo dole",
+      btnBottomLeft: "Vlevo dole",
+      btnTopRight: "Vpravo nahoře",
+      btnTopLeft: "Vlevo nahoře",
+      btnHidden: "Skryté",
     },
   };
 
@@ -194,6 +231,36 @@ const VERSION = "1.9.0";
     return TRANSLATIONS[lang] ? lang : "en";
   }
   var T = TRANSLATIONS[detectLang()];
+
+  // --- Button position ---
+  var BTN_POSITIONS = {
+    "bottom-right": { bottom: "16px", right: "16px" },
+    "bottom-left":  { bottom: "16px", left: "16px" },
+    "top-right":    { top: "16px", right: "16px" },
+    "top-left":     { top: "16px", left: "16px" },
+    "hidden":       null,
+  };
+
+  function getButtonPosition() {
+    return localStorage.getItem(BUTTON_KEY) || "bottom-right";
+  }
+
+  function setButtonPosition(pos) {
+    localStorage.setItem(BUTTON_KEY, pos);
+    var btn = document.getElementById("ha-canvas-ribbons-toggle");
+    if (pos === "hidden") {
+      if (btn) btn.style.display = "none";
+    } else {
+      var coords = BTN_POSITIONS[pos] || BTN_POSITIONS["bottom-right"];
+      if (btn) {
+        btn.style.top = coords.top || "auto";
+        btn.style.bottom = coords.bottom || "auto";
+        btn.style.left = coords.left || "auto";
+        btn.style.right = coords.right || "auto";
+        btn.style.display = "flex";
+      }
+    }
+  }
 
   // --- Presets ---
   var PRESETS = [
@@ -889,6 +956,34 @@ const VERSION = "1.9.0";
     updateHuePreview();
     panel.appendChild(huePreviewBar);
 
+    // --- Button position selector ---
+    var btnPosRow = document.createElement("div");
+    btnPosRow.style.cssText = "display:flex;align-items:center;gap:8px;padding:4px 0 6px 0;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;";
+    var btnPosLbl = document.createElement("label");
+    btnPosLbl.textContent = T.buttonPos;
+    btnPosLbl.style.cssText = "min-width:90px;color:#aaa;font-size:11px;";
+    var btnPosSel = document.createElement("select");
+    btnPosSel.style.cssText = "flex:1;background:#1a1a22;color:#eee;border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:3px 6px;font-size:11px;cursor:pointer;";
+    var btnPosOptions = [
+      { value: "bottom-right", label: T.btnBottomRight },
+      { value: "bottom-left",  label: T.btnBottomLeft },
+      { value: "top-right",    label: T.btnTopRight },
+      { value: "top-left",     label: T.btnTopLeft },
+      { value: "hidden",       label: T.btnHidden },
+    ];
+    var curBtnPos = getButtonPosition();
+    btnPosOptions.forEach(function (o) {
+      var opt = document.createElement("option");
+      opt.value = o.value;
+      opt.textContent = o.label;
+      if (o.value === curBtnPos) opt.selected = true;
+      btnPosSel.appendChild(opt);
+    });
+    btnPosSel.onchange = function () { setButtonPosition(btnPosSel.value); };
+    btnPosRow.appendChild(btnPosLbl);
+    btnPosRow.appendChild(btnPosSel);
+    panel.appendChild(btnPosRow);
+
     // Reset button
     var btnRow = document.createElement("div");
     btnRow.style.cssText = "display:flex;gap:8px;margin-top:6px;";
@@ -900,6 +995,7 @@ const VERSION = "1.9.0";
       "background:rgba(255,255,255,0.06);color:#ccc;cursor:pointer;font-size:11px;";
     resetBtn.onclick = function () {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(BUTTON_KEY);
       location.reload();
     };
     btnRow.appendChild(resetBtn);
@@ -952,8 +1048,14 @@ const VERSION = "1.9.0";
     svg.appendChild(path);
     svg.appendChild(circle);
     btn.appendChild(svg);
+    var btnPos = getButtonPosition();
+    var coords = BTN_POSITIONS[btnPos] || BTN_POSITIONS["bottom-right"];
+    var posStyle = btnPos === "hidden" ? "display:none;" : (
+      "top:" + (coords.top || "auto") + ";bottom:" + (coords.bottom || "auto") + ";" +
+      "left:" + (coords.left || "auto") + ";right:" + (coords.right || "auto") + ";"
+    );
     btn.style.cssText =
-      "position:fixed;bottom:16px;right:16px;z-index:999;width:40px;height:40px;" +
+      "position:fixed;" + posStyle + "z-index:999;width:40px;height:40px;" +
       "border-radius:50%;border:1px solid rgba(255,255,255,0.15);background:rgba(20,20,24,0.8);" +
       "color:#6d8fff;cursor:pointer;display:flex;align-items:center;justify-content:center;" +
       "pointer-events:auto;box-shadow:0 2px 12px rgba(0,0,0,0.4);backdrop-filter:blur(8px);" +
@@ -962,6 +1064,16 @@ const VERSION = "1.9.0";
     btn.onmouseleave = function () { btn.style.transform = "scale(1)"; btn.style.background = "rgba(20,20,24,0.8)"; };
     btn.onclick = function () { buildGUI(opts, state); };
     document.body.appendChild(btn);
+
+    // URL param fallback: ?canvas-ribbons=settings opens GUI when button is hidden
+    if (getButtonPosition() === "hidden") {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get("canvas-ribbons") === "settings") {
+          setTimeout(function () { buildGUI(opts, state); }, 500);
+        }
+      } catch (e) {}
+    }
   }
 
   // --- Main ---
