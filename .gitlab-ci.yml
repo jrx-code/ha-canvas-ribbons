@@ -17,6 +17,7 @@ stages:
 # ===== STAGE: LINT (main + publish) =========================================
 lint:
   stage: lint
+  tags: [shell]
   script:
     - echo "=== File presence and size check ==="
     - test -f dist/ha-canvas-ribbons.js || { echo "ERROR: dist/ha-canvas-ribbons.js not found"; exit 1; }
@@ -37,6 +38,7 @@ lint:
 # ===== STAGE: TEST (main + publish) =========================================
 test:
   stage: test
+  tags: [shell]
   script:
     - echo "=== Structural validation (no node runtime) ==="
     - test -f package.json || { echo "ERROR: package.json not found"; exit 1; }
