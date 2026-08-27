@@ -13,6 +13,8 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 | Version | Type | Description |
 |---|---|---|
 | **1.x** | **Major** | **Single-file HACS plugin with canvas ribbon animation** |
+| 1.10 | Minor | Configurable button position ([#1](https://github.com/jrx-code/ha-canvas-ribbons/issues/1)) |
+| 1.9 | Minor | Catalan (ca) translation |
 | 1.8 | Minor | Auto-preset based on sun position (elevation + rising) |
 | 1.7 | Minor | Save & close button (blue, default action) |
 | 1.7.1 | Fix | Preset dropdown: dark theme colors, retain selection |

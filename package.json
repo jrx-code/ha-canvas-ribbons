@@ -1,18 +1,18 @@
 {
   "name": "ha-canvas-ribbons",
   "version": "1.10.0",
-  "description": "",
+  "description": "Animated canvas ribbon background for Home Assistant dashboards — HACS frontend plugin",
   "main": "canvas-ribbons.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node canvas-ribbons.test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git@git.example.com:jrx-code/ha-canvas-ribbons.git"
+    "url": "git+https://github.com/jrx-code/ha-canvas-ribbons.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["home-assistant", "hacs", "lovelace", "plugin"],
+  "author": "JI ENGINEERING",
+  "license": "MIT",
   "devDependencies": {
     "jsdom": "^28.1.0"
   }
