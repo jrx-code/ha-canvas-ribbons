@@ -13,8 +13,9 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 | Version | Type | Description |
 |---|---|---|
 | **1.x** | **Major** | **Single-file HACS plugin with canvas ribbon animation** |
+| 1.11.1 | Fix | Repository renamed to `hassio-canvas-ribbons`: HACS path is now `/hacsfiles/hassio-canvas-ribbons/`, see *Moving from ha-canvas-ribbons* |
 | 1.11 | Fix | Theme mode canvas-only for Material You (#4); Firefox/low perf mode (DPR cap + frame skip) (#3) |
-| 1.10 | Minor | Configurable button position ([#1](https://github.com/jrx-code/ha-canvas-ribbons/issues/1)) |
+| 1.10 | Minor | Configurable button position ([#1](https://github.com/jrx-code/hassio-canvas-ribbons/issues/1)) |
 | 1.9 | Minor | Catalan (ca) translation |
 | 1.8 | Minor | Auto-preset based on sun position (elevation + rising) |
 | 1.7 | Minor | Save & close button (blue, default action) |
@@ -48,9 +49,22 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 2. Add this repository URL, category: **Lovelace**
 3. Install **Canvas Ribbons Background**
 4. Add resource in **Settings → Dashboards → Resources**:
-   - URL: `/hacsfiles/ha-canvas-ribbons/ha-canvas-ribbons.js`
+   - URL: `/hacsfiles/hassio-canvas-ribbons/ha-canvas-ribbons.js`
    - Type: JavaScript Module
 5. Refresh browser (**Ctrl+Shift+R**)
+
+### Moving from ha-canvas-ribbons
+
+The repository was renamed from `ha-canvas-ribbons` to `hassio-canvas-ribbons` in 1.11.1.
+HACS installs into a folder named after the repository, so after updating it adds a new
+dashboard resource `/hacsfiles/hassio-canvas-ribbons/ha-canvas-ribbons.js` next to the
+old `/hacsfiles/ha-canvas-ribbons/...` one. Loading both breaks the card. After updating:
+
+1. **Settings → Dashboards → Resources**: delete the entry starting with `/hacsfiles/ha-canvas-ribbons/`
+2. Delete the old folder `/config/www/community/ha-canvas-ribbons/`
+3. Refresh browser (**Ctrl+Shift+R**)
+
+Your settings are kept: they live in the browser under the same keys as before.
 
 ### Manual
 

@@ -1,6 +1,6 @@
 {
-  "name": "ha-canvas-ribbons",
-  "version": "1.11.0",
+  "name": "hassio-canvas-ribbons",
+  "version": "1.11.1",
   "description": "Animated canvas ribbon background for Home Assistant dashboards — HACS frontend plugin",
   "main": "canvas-ribbons.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jrx-code/ha-canvas-ribbons.git"
+    "url": "git+https://github.com/jrx-code/hassio-canvas-ribbons.git"
   },
   "keywords": ["home-assistant", "hacs", "lovelace", "plugin"],
   "author": "JI ENGINEERING",
