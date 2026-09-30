@@ -38,6 +38,7 @@ const VERSION = "1.11.0";
       perfAuto: "Auto",
       perfHigh: "High",
       perfLow: "Low (Firefox-friendly)",
+      perfReloadHint: "Reload page to apply performance mode",
       sidebarAlpha: "Sidebar alpha",
       preset: "Preset",
       presetCustom: "Custom",
@@ -73,13 +74,6 @@ const VERSION = "1.11.0";
       brightness: "Jasność",
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
-      themeMode: "Přepsání motivu",
-      themeModeFull: "Plné (karty + header)",
-      themeModeCanvas: "Jen canvas (Material You OK)",
-      perfMode: "Výkon",
-      perfAuto: "Auto",
-      perfHigh: "Vysoký",
-      perfLow: "Nízký (Firefox)",
       themeMode: "Nadpisanie motywu",
       themeModeFull: "Pełne (karty + header)",
       themeModeCanvas: "Tylko canvas (Material You OK)",
@@ -87,6 +81,7 @@ const VERSION = "1.11.0";
       perfAuto: "Auto",
       perfHigh: "Wysoka",
       perfLow: "Niska (Firefox)",
+      perfReloadHint: "Odśwież stronę, aby zastosować tryb wydajności",
       sidebarAlpha: "Sidebar alfa",
       preset: "Preset",
       presetCustom: "Własny",
@@ -129,6 +124,7 @@ const VERSION = "1.11.0";
       perfAuto: "Auto",
       perfHigh: "Hoch",
       perfLow: "Niedrig (Firefox)",
+      perfReloadHint: "Seite neu laden, um den Leistungsmodus anzuwenden",
       sidebarAlpha: "Sidebar-Alpha",
       preset: "Vorlage",
       presetCustom: "Eigene",
@@ -171,6 +167,7 @@ const VERSION = "1.11.0";
       perfAuto: "Auto",
       perfHigh: "Alto",
       perfLow: "Bajo (Firefox)",
+      perfReloadHint: "Recarga la página para aplicar el modo de rendimiento",
       sidebarAlpha: "Sidebar alfa",
       preset: "Preajuste",
       presetCustom: "Personal.",
@@ -213,6 +210,7 @@ const VERSION = "1.11.0";
       perfAuto: "Auto",
       perfHigh: "Alt",
       perfLow: "Baix (Firefox)",
+      perfReloadHint: "Recarrega la pàgina per aplicar el mode de rendiment",
       sidebarAlpha: "Barra lateral alfa",
       preset: "Preajust",
       presetCustom: "Personal.",
@@ -248,6 +246,14 @@ const VERSION = "1.11.0";
       brightness: "Jas",
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
+      themeMode: "Přepsání motivu",
+      themeModeFull: "Plné (karty + header)",
+      themeModeCanvas: "Jen canvas (Material You OK)",
+      perfMode: "Výkon",
+      perfAuto: "Auto",
+      perfHigh: "Vysoký",
+      perfLow: "Nízký (Firefox)",
+      perfReloadHint: "Pro použití režimu výkonu obnovte stránku",
       sidebarAlpha: "Sidebar alfa",
       preset: "Předvolba",
       presetCustom: "Vlastní",
@@ -851,7 +857,7 @@ const VERSION = "1.11.0";
             hint = document.createElement("div");
             hint.id = "ribbon-restart-hint";
             hint.style.cssText = "color:#f0c674;font-size:11px;margin-top:6px;";
-            hint.textContent = "Reload page to apply performance mode";
+            hint.textContent = T.perfReloadHint;
             panel.appendChild(hint);
           }
         }
@@ -1297,6 +1303,13 @@ const VERSION = "1.11.0";
       if (perf === "low") {
         frameSkip ^= 1;
         if (frameSkip) { rafId = requestAnimationFrame(render); return; }
+      }
+      // Low mode draws every other frame; advance the simulation twice per
+      // drawn frame so ribbon speed, trail length and colour cycle stay the same.
+      var steps = perf === "low" ? 2 : 1;
+      for (var st = 1; st < steps; st++) {
+        updateColor();
+        for (var q = 0; q < waves.length; q++) waves[q].update();
       }
       updateColor();
       ctx.clearRect(0, 0, state.w, state.h);
