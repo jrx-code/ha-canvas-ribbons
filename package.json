@@ -1,6 +1,6 @@
 {
   "name": "ha-canvas-ribbons",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "Animated canvas ribbon background for Home Assistant dashboards — HACS frontend plugin",
   "main": "canvas-ribbons.js",
   "scripts": {
