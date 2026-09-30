@@ -13,6 +13,7 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 | Version | Type | Description |
 |---|---|---|
 | **1.x** | **Major** | **Single-file HACS plugin with canvas ribbon animation** |
+| 1.11 | Fix | Theme mode canvas-only for Material You (#4); Firefox/low perf mode (DPR cap + frame skip) (#3) |
 | 1.10 | Minor | Configurable button position ([#1](https://github.com/jrx-code/ha-canvas-ribbons/issues/1)) |
 | 1.9 | Minor | Catalan (ca) translation |
 | 1.8 | Minor | Auto-preset based on sun position (elevation + rising) |
@@ -32,10 +33,11 @@ Based on `animation.79.canvas-ribbons` from [lovelace-bg-animation](https://gith
 - Animated ribbon background rendered on HTML5 Canvas
 - **GUI configuration panel** — click the button in the bottom-right corner
 - **16 presets** (Pip-Boy, Neon City, seasons, iOS Dark, Material You…)
-- 13 configurable parameters (waves, speed, colors, saturation, brightness, transparency)
+- Configurable parameters (waves, speed, colors, saturation, brightness, transparency)
+- **Theme override**: full (cards/header/sidebar) or canvas-only (Material You compatible)
+- **Performance mode**: auto / high / low (auto uses low on Firefox)
 - Settings persisted to `localStorage`
-- Automatic HA theme transparency (cards, header, sidebar)
-- Lightweight (~6 KB), no dependencies
+- Lightweight, no dependencies
 - HACS compatible
 
 ## Installation
@@ -65,6 +67,8 @@ Click the floating button in the bottom-right corner to open the settings panel:
 | Parameter | Range | Live | Description |
 |---|---|---|---|
 | Enable on panel | on/off | yes | Enable/disable ribbons per HA panel (stored per URL path) |
+| Theme override | full / canvas-only | yes | `canvas-only` leaves card/header/sidebar to the theme (fixes Material You) |
+| Performance | auto / high / low | reload | `low` caps DPR and skips frames; `auto` picks low on Firefox |
 | Waves | 1–8 | reload | Number of ribbon waves |
 | Trail width | 20–300 | yes | Length of ribbon trail |
 | Rotation | 0–360° | yes | Rotation angle |
@@ -74,9 +78,9 @@ Click the floating button in the bottom-right corner to open the settings panel:
 | Hue range | 0–15 | yes | Color oscillation width |
 | Saturation | 0–1 | yes | Color saturation |
 | Brightness | 0–1 | yes | Color brightness |
-| Card alpha | 0–1 | yes | Card background opacity |
-| Header alpha | 0–1 | yes | Header opacity |
-| Sidebar alpha | 0–1 | yes | Sidebar opacity |
+| Card alpha | 0–1 | yes | Card background opacity (full theme mode only) |
+| Header alpha | 0–1 | yes | Header opacity (full theme mode only) |
+| Sidebar alpha | 0–1 | yes | Sidebar opacity (full theme mode only) |
 
 Settings are saved to `localStorage` and persist across page reloads. Click **Reset** to restore defaults.
 
@@ -87,17 +91,19 @@ You can also set config programmatically via `window.canvasRibbonsConfig`:
 ```html
 <script>
   window.canvasRibbonsConfig = {
-    waves: 3,              // number of ribbon waves (default: 3)
-    width: 120,            // ribbon trail length (default: 120)
-    rotation: 45,          // rotation angle in degrees (default: 45)
-    amplitude: 0.5,        // wave amplitude (default: 0.5)
-    speed: [0.004, 0.008], // min/max animation speed
-    hue: [11, 14],         // hue oscillation range
-    saturation: 0.8,       // color saturation (default: 0.8)
-    brightness: 1.0,       // color brightness (default: 1.0)
-    cardAlpha: 0.85,       // card background opacity (default: 0.85)
-    headerAlpha: 0.7,      // header opacity (default: 0.7)
-    sidebarAlpha: 0.8,     // sidebar opacity (default: 0.8)
+    waves: 3,
+    width: 120,
+    rotation: 45,
+    amplitude: 0.5,
+    speed: [0.004, 0.008],
+    hue: [11, 14],
+    saturation: 0.8,
+    brightness: 1.0,
+    cardAlpha: 0.85,
+    headerAlpha: 0.7,
+    sidebarAlpha: 0.8,
+    themeMode: "full",           // or "canvas-only"
+    performanceMode: "auto",     // or "high" / "low"
   };
 </script>
 ```
@@ -107,7 +113,7 @@ Config priority: defaults → localStorage → `window.canvasRibbonsConfig`
 ## How it works
 
 1. Injects a `<canvas>` element on `document.body` with `z-index: 0` and `pointer-events: none`
-2. Adds CSS custom properties to make HA backgrounds transparent
+2. Adds CSS custom properties for HA backgrounds (`full`) or only page background (`canvas-only`)
 3. Renders animated Bézier curves (ribbons) via `requestAnimationFrame`
 4. No iframes, no shadow DOM hacks — clean DOM injection
 

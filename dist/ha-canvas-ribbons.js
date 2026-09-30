@@ -2,7 +2,7 @@
 // https://git.example.com/jrx-code/ha-canvas-ribbons
 // Based on Boris Šehovac's CodePen (https://codepen.io/bsehovac/pen/LQVzxJ)
 
-const VERSION = "1.10.0";
+const VERSION = "1.11.0";
 
 (function () {
   "use strict";
@@ -31,6 +31,14 @@ const VERSION = "1.10.0";
       brightness: "Brightness",
       cardAlpha: "Card alpha",
       headerAlpha: "Header alpha",
+      themeMode: "Theme override",
+      themeModeFull: "Full (cards + header)",
+      themeModeCanvas: "Canvas only (Material You OK)",
+      perfMode: "Performance",
+      perfAuto: "Auto",
+      perfHigh: "High",
+      perfLow: "Low (Firefox-friendly)",
+      perfReloadHint: "Reload page to apply performance mode",
       sidebarAlpha: "Sidebar alpha",
       preset: "Preset",
       presetCustom: "Custom",
@@ -66,6 +74,14 @@ const VERSION = "1.10.0";
       brightness: "Jasność",
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
+      themeMode: "Nadpisanie motywu",
+      themeModeFull: "Pełne (karty + header)",
+      themeModeCanvas: "Tylko canvas (Material You OK)",
+      perfMode: "Wydajność",
+      perfAuto: "Auto",
+      perfHigh: "Wysoka",
+      perfLow: "Niska (Firefox)",
+      perfReloadHint: "Odśwież stronę, aby zastosować tryb wydajności",
       sidebarAlpha: "Sidebar alfa",
       preset: "Preset",
       presetCustom: "Własny",
@@ -101,6 +117,14 @@ const VERSION = "1.10.0";
       brightness: "Helligkeit",
       cardAlpha: "Karten-Alpha",
       headerAlpha: "Header-Alpha",
+      themeMode: "Theme-Override",
+      themeModeFull: "Voll (Karten + Header)",
+      themeModeCanvas: "Nur Canvas (Material You OK)",
+      perfMode: "Leistung",
+      perfAuto: "Auto",
+      perfHigh: "Hoch",
+      perfLow: "Niedrig (Firefox)",
+      perfReloadHint: "Seite neu laden, um den Leistungsmodus anzuwenden",
       sidebarAlpha: "Sidebar-Alpha",
       preset: "Vorlage",
       presetCustom: "Eigene",
@@ -136,6 +160,14 @@ const VERSION = "1.10.0";
       brightness: "Brillo",
       cardAlpha: "Tarjetas alfa",
       headerAlpha: "Header alfa",
+      themeMode: "Anulación de tema",
+      themeModeFull: "Completo (tarjetas + header)",
+      themeModeCanvas: "Solo canvas (Material You OK)",
+      perfMode: "Rendimiento",
+      perfAuto: "Auto",
+      perfHigh: "Alto",
+      perfLow: "Bajo (Firefox)",
+      perfReloadHint: "Recarga la página para aplicar el modo de rendimiento",
       sidebarAlpha: "Sidebar alfa",
       preset: "Preajuste",
       presetCustom: "Personal.",
@@ -171,6 +203,14 @@ const VERSION = "1.10.0";
       brightness: "Brillantor",
       cardAlpha: "Targetes alfa",
       headerAlpha: "Capçalera alfa",
+      themeMode: "Substitució del tema",
+      themeModeFull: "Complet (targetes + capçalera)",
+      themeModeCanvas: "Només canvas (Material You OK)",
+      perfMode: "Rendiment",
+      perfAuto: "Auto",
+      perfHigh: "Alt",
+      perfLow: "Baix (Firefox)",
+      perfReloadHint: "Recarrega la pàgina per aplicar el mode de rendiment",
       sidebarAlpha: "Barra lateral alfa",
       preset: "Preajust",
       presetCustom: "Personal.",
@@ -206,6 +246,14 @@ const VERSION = "1.10.0";
       brightness: "Jas",
       cardAlpha: "Karty alfa",
       headerAlpha: "Header alfa",
+      themeMode: "Přepsání motivu",
+      themeModeFull: "Plné (karty + header)",
+      themeModeCanvas: "Jen canvas (Material You OK)",
+      perfMode: "Výkon",
+      perfAuto: "Auto",
+      perfHigh: "Vysoký",
+      perfLow: "Nízký (Firefox)",
+      perfReloadHint: "Pro použití režimu výkonu obnovte stránku",
       sidebarAlpha: "Sidebar alfa",
       preset: "Předvolba",
       presetCustom: "Vlastní",
@@ -346,10 +394,45 @@ const VERSION = "1.10.0";
     cardAlpha: 0.85,
     headerAlpha: 0.7,
     sidebarAlpha: 0.8,
+    themeMode: "full",
+    performanceMode: "auto",
   };
 
   // Clamp value to valid range
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+  function isFirefox() {
+    return typeof navigator !== "undefined" && /firefox/i.test(navigator.userAgent || "");
+  }
+
+  function effectivePerfMode(mode) {
+    if (mode === "high" || mode === "low") return mode;
+    return isFirefox() ? "low" : "high";
+  }
+
+  function buildThemeCss(opts) {
+    var base =
+      "html, body { background: #000 !important; }\n" +
+      "home-assistant {\n" +
+      "  --primary-background-color: transparent !important;\n" +
+      "  --secondary-background-color: rgba(0,0,0,0.3) !important;\n";
+    if (opts.themeMode === "canvas-only") {
+      // Leave card/header/sidebar to the active theme (Material You, etc.)
+      return base + "  --divider-color: rgba(255,255,255,0.08) !important;\n" + "}";
+    }
+    var cA = "rgba(32,33,36," + opts.cardAlpha + ")";
+    var hA = "rgba(32,33,36," + opts.headerAlpha + ")";
+    var sA = "rgba(32,33,36," + opts.sidebarAlpha + ")";
+    return (
+      base +
+      "  --card-background-color: " + cA + " !important;\n" +
+      "  --ha-card-background: " + cA + " !important;\n" +
+      "  --app-header-background-color: " + hA + " !important;\n" +
+      "  --sidebar-background-color: " + sA + " !important;\n" +
+      "  --divider-color: rgba(255,255,255,0.08) !important;\n" +
+      "}"
+    );
+  }
 
   // Validate and sanitize a config value
   function sanitizeConfig(parsed) {
@@ -373,6 +456,10 @@ const VERSION = "1.10.0";
       clean.brightness = clamp(parsed.brightness, 0, 1);
     if (typeof parsed.sidebarAlpha === "number" && isFinite(parsed.sidebarAlpha))
       clean.sidebarAlpha = clamp(parsed.sidebarAlpha, 0, 1);
+    if (parsed.themeMode === "full" || parsed.themeMode === "canvas-only")
+      clean.themeMode = parsed.themeMode;
+    if (parsed.performanceMode === "auto" || parsed.performanceMode === "high" || parsed.performanceMode === "low")
+      clean.performanceMode = parsed.performanceMode;
     if (Array.isArray(parsed.speed) && parsed.speed.length === 2 &&
         typeof parsed.speed[0] === "number" && typeof parsed.speed[1] === "number" &&
         isFinite(parsed.speed[0]) && isFinite(parsed.speed[1]))
@@ -712,6 +799,7 @@ const VERSION = "1.10.0";
         hue: [opts.hue[0], opts.hue[1]], saturation: opts.saturation,
         brightness: opts.brightness, cardAlpha: opts.cardAlpha,
         headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
+          themeMode: opts.themeMode, performanceMode: opts.performanceMode,
       });
 
       // Show restart hint for waves change
@@ -735,27 +823,64 @@ const VERSION = "1.10.0";
 
     presetRow.appendChild(presetLbl);
     presetRow.appendChild(presetSelect);
+    
     panel.appendChild(presetRow);
+
+    function addSelectRow(label, key, choices) {
+      var row = document.createElement("div");
+      row.style.cssText = "display:flex;align-items:center;gap:8px;margin:6px 0;";
+      var lbl = document.createElement("label");
+      lbl.textContent = label;
+      lbl.style.cssText = "min-width:90px;color:#aaa;font-size:11px;";
+      var sel = document.createElement("select");
+      sel.style.cssText = "flex:1;background:#1a1a1a;color:#eee;border:1px solid #333;border-radius:4px;padding:4px;font-size:11px;";
+      choices.forEach(function (c) {
+        var o = document.createElement("option");
+        o.value = c.value; o.textContent = c.label;
+        if (opts[key] === c.value) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.onchange = function () {
+        opts[key] = this.value;
+        if (key === "themeMode") updateStyle();
+        saveConfig({
+          waves: opts.waves, width: opts.width, rotation: opts.rotation,
+          amplitude: opts.amplitude, speed: [opts.speed[0], opts.speed[1]],
+          hue: [opts.hue[0], opts.hue[1]], saturation: opts.saturation,
+          brightness: opts.brightness, cardAlpha: opts.cardAlpha,
+          headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
+          themeMode: opts.themeMode, performanceMode: opts.performanceMode,
+        });
+        if (key === "performanceMode") {
+          var hint = document.getElementById("ribbon-restart-hint");
+          if (!hint) {
+            hint = document.createElement("div");
+            hint.id = "ribbon-restart-hint";
+            hint.style.cssText = "color:#f0c674;font-size:11px;margin-top:6px;";
+            hint.textContent = T.perfReloadHint;
+            panel.appendChild(hint);
+          }
+        }
+      };
+      row.appendChild(lbl); row.appendChild(sel); panel.appendChild(row);
+    }
+    addSelectRow(T.themeMode, "themeMode", [
+      { value: "full", label: T.themeModeFull },
+      { value: "canvas-only", label: T.themeModeCanvas },
+    ]);
+    addSelectRow(T.perfMode, "performanceMode", [
+      { value: "auto", label: T.perfAuto },
+      { value: "high", label: T.perfHigh },
+      { value: "low", label: T.perfLow },
+    ]);
+
 
     var valueDisplays = {};
 
     function updateStyle() {
       var s = document.getElementById("ha-canvas-ribbons-style");
       if (!s) return;
-      var cA = "rgba(32,33,36," + opts.cardAlpha + ")";
-      var hA = "rgba(32,33,36," + opts.headerAlpha + ")";
-      var sA = "rgba(32,33,36," + opts.sidebarAlpha + ")";
-      s.textContent =
-        "html, body { background: #000 !important; }\n" +
-        "home-assistant {\n" +
-        "  --primary-background-color: transparent !important;\n" +
-        "  --secondary-background-color: rgba(0,0,0,0.3) !important;\n" +
-        "  --card-background-color: " + cA + " !important;\n" +
-        "  --ha-card-background: " + cA + " !important;\n" +
-        "  --app-header-background-color: " + hA + " !important;\n" +
-        "  --sidebar-background-color: " + sA + " !important;\n" +
-        "  --divider-color: rgba(255,255,255,0.08) !important;\n" +
-        "}";
+      s.textContent = buildThemeCss(opts);
     }
 
     sliders.forEach(function (s) {
@@ -809,6 +934,7 @@ const VERSION = "1.10.0";
           hue: [opts.hue[0], opts.hue[1]], saturation: opts.saturation,
           brightness: opts.brightness, cardAlpha: opts.cardAlpha,
           headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
+          themeMode: opts.themeMode, performanceMode: opts.performanceMode,
         });
 
         if (s.restart) {
@@ -891,6 +1017,7 @@ const VERSION = "1.10.0";
         amplitude: opts.amplitude, speed: [opts.speed[0], opts.speed[1]],
         hue: [opts.hue[0], opts.hue[1]], cardAlpha: opts.cardAlpha,
         headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
+          themeMode: opts.themeMode, performanceMode: opts.performanceMode,
       });
     }
 
@@ -1106,20 +1233,7 @@ const VERSION = "1.10.0";
     var style = document.createElement("style");
     style.id = "ha-canvas-ribbons-style";
     function applyStyle() {
-      var cA = "rgba(32,33,36," + opts.cardAlpha + ")";
-      var hA = "rgba(32,33,36," + opts.headerAlpha + ")";
-      var sA = "rgba(32,33,36," + opts.sidebarAlpha + ")";
-      style.textContent =
-        "html, body { background: #000 !important; }\n" +
-        "home-assistant {\n" +
-        "  --primary-background-color: transparent !important;\n" +
-        "  --secondary-background-color: rgba(0,0,0,0.3) !important;\n" +
-        "  --card-background-color: " + cA + " !important;\n" +
-        "  --ha-card-background: " + cA + " !important;\n" +
-        "  --app-header-background-color: " + hA + " !important;\n" +
-        "  --sidebar-background-color: " + sA + " !important;\n" +
-        "  --divider-color: rgba(255,255,255,0.08) !important;\n" +
-        "}";
+      style.textContent = buildThemeCss(opts);
     }
     applyStyle();
     document.head.appendChild(style);
@@ -1133,7 +1247,9 @@ const VERSION = "1.10.0";
     };
 
     function resize() {
-      var s = Math.min(window.devicePixelRatio || 1, 1.25);
+      var perf = effectivePerfMode(opts.performanceMode);
+      var dprCap = perf === "low" ? 1 : 1.25;
+      var s = Math.min(window.devicePixelRatio || 1, dprCap);
       var w = window.innerWidth, h = window.innerHeight;
       canvas.width = w * s;
       canvas.height = h * s;
@@ -1180,8 +1296,21 @@ const VERSION = "1.10.0";
     var rafId = null;
     var running = true;
 
+    var frameSkip = 0;
     function render() {
       if (!running) return;
+      var perf = effectivePerfMode(opts.performanceMode);
+      if (perf === "low") {
+        frameSkip ^= 1;
+        if (frameSkip) { rafId = requestAnimationFrame(render); return; }
+      }
+      // Low mode draws every other frame; advance the simulation twice per
+      // drawn frame so ribbon speed, trail length and colour cycle stay the same.
+      var steps = perf === "low" ? 2 : 1;
+      for (var st = 1; st < steps; st++) {
+        updateColor();
+        for (var q = 0; q < waves.length; q++) waves[q].update();
+      }
       updateColor();
       ctx.clearRect(0, 0, state.w, state.h);
 
@@ -1296,6 +1425,7 @@ const VERSION = "1.10.0";
         hue: [opts.hue[0], opts.hue[1]], saturation: opts.saturation,
         brightness: opts.brightness, cardAlpha: opts.cardAlpha,
         headerAlpha: opts.headerAlpha, sidebarAlpha: opts.sidebarAlpha,
+          themeMode: opts.themeMode, performanceMode: opts.performanceMode,
       });
       console.info("[ha-canvas-ribbons] Sun auto-preset: " + p.name + " (elev=" + s.attributes.elevation + ")");
     }
